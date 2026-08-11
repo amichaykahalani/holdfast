@@ -2,14 +2,19 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCents } from "@/lib/fee";
 import { STATUS_LABELS } from "@/lib/status";
+import { FundButton } from "@/components/fund-button";
+import { startCheckout } from "./actions";
 import type { PaymentRequest } from "@/types/payment-request";
 
 export default async function PublicRequestPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ session_id?: string }>;
 }) {
   const { id } = await params;
+  const { session_id: sessionId } = await searchParams;
   const admin = createAdminClient();
   const { data: request } = await admin
     .from("payment_requests")
@@ -60,14 +65,13 @@ export default async function PublicRequestPage({
           </p>
 
           {isAwaitingPayment ? (
-            <button
-              type="button"
-              disabled
-              title="Payment is coming in the next build slice"
-              className="mt-6 w-full rounded-md bg-black px-4 py-3 font-medium text-white opacity-50"
-            >
-              Fund this request
-            </button>
+            sessionId ? (
+              <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">
+                Confirming your payment… refresh in a few seconds.
+              </p>
+            ) : (
+              <FundButton action={startCheckout.bind(null, request.id)} />
+            )
           ) : (
             <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">
               Status: {STATUS_LABELS[request.status]}

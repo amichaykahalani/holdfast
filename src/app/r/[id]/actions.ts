@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe/client";
 import { getBaseUrl } from "@/lib/base-url";
+import { releaseFunds } from "@/lib/release";
 import type { PaymentRequest } from "@/types/payment-request";
 
 export async function startCheckout(requestId: string) {
@@ -47,4 +48,23 @@ export async function startCheckout(requestId: string) {
   if (!session.url) throw new Error("Stripe did not return a checkout URL.");
 
   redirect(session.url);
+}
+
+export async function approveRequest(requestId: string) {
+  const result = await releaseFunds(requestId, "approved");
+
+  if (!result.ok) {
+    if (result.reason === "freelancer_not_onboarded") {
+      throw new Error(
+        "The freelancer hasn't finished connecting their payout account yet. Please try again later.",
+      );
+    }
+    if (result.reason === "transfer_failed") {
+      throw new Error("Something went wrong releasing the payment. Please try again.");
+    }
+    // "not_eligible" — already handled (e.g. a double-click); fall through
+    // to the redirect below so the page just reflects current status.
+  }
+
+  redirect(`/r/${requestId}`);
 }

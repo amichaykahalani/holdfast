@@ -12,6 +12,14 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: freelancer } = user
+    ? await supabase
+        .from("freelancers")
+        .select("stripe_onboarding_complete")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
   return (
     <div className="flex flex-1 flex-col">
       <header className="border-b border-black/10">
@@ -35,6 +43,15 @@ export default async function DashboardLayout({
           </nav>
         </div>
       </header>
+
+      {freelancer && !freelancer.stripe_onboarding_complete && (
+        <Link
+          href="/onboarding/stripe"
+          className="bg-amber-100 px-6 py-2 text-center text-sm font-medium text-amber-900 hover:bg-amber-200"
+        >
+          Connect Stripe to get paid →
+        </Link>
+      )}
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
         {children}

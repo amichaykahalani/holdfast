@@ -3,10 +3,14 @@
 import { useState, useTransition } from "react";
 import { unstable_rethrow } from "next/navigation";
 
-export function FundButton({
+export function ActionButton({
   action,
+  label,
+  pendingLabel,
 }: {
   action: () => Promise<void>;
+  label: string;
+  pendingLabel: string;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -29,7 +33,7 @@ export function FundButton({
         }
         className="mt-6 w-full rounded-md bg-black px-4 py-3 font-medium text-white hover:bg-black/80 disabled:opacity-50"
       >
-        {isPending ? "Redirecting to Stripe…" : "Fund this request"}
+        {isPending ? pendingLabel : label}
       </button>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

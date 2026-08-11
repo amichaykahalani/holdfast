@@ -2,9 +2,9 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCents } from "@/lib/fee";
 import { STATUS_LABELS } from "@/lib/status";
-import { FundButton } from "@/components/fund-button";
+import { ActionButton } from "@/components/action-button";
 import { CountdownTimer } from "@/components/countdown-timer";
-import { startCheckout } from "./actions";
+import { startCheckout, approveRequest } from "./actions";
 import type { PaymentRequest } from "@/types/payment-request";
 
 export default async function PublicRequestPage({
@@ -74,7 +74,11 @@ export default async function PublicRequestPage({
                 Confirming your payment… refresh in a few seconds.
               </p>
             ) : (
-              <FundButton action={startCheckout.bind(null, request.id)} />
+              <ActionButton
+                action={startCheckout.bind(null, request.id)}
+                label="Fund this request"
+                pendingLabel="Redirecting to Stripe…"
+              />
             )
           ) : isWorkSubmitted && request.review_deadline ? (
             <div className="mt-6 rounded-md bg-black/5 px-4 py-3">
@@ -89,6 +93,11 @@ export default async function PublicRequestPage({
               <div className="mt-2">
                 <CountdownTimer deadline={request.review_deadline} />
               </div>
+              <ActionButton
+                action={approveRequest.bind(null, request.id)}
+                label="Approve & release payment"
+                pendingLabel="Releasing…"
+              />
             </div>
           ) : (
             <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">

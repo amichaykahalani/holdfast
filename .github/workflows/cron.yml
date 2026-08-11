@@ -1,0 +1,30 @@
+name: Auto-release cron
+
+# Vercel Hobby only allows daily cron schedules, but SPEC.md §8 requires a
+# 5-minute sweep, so this workflow triggers /api/cron/auto-release instead.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: auto-release-cron
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Call auto-release endpoint
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/auto-release")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          echo
+          if [ "$status" -ge 400 ]; then
+            echo "::error::auto-release endpoint returned $status"
+            exit 1
+          fi

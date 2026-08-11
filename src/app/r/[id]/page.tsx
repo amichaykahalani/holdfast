@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCents } from "@/lib/fee";
 import { STATUS_LABELS } from "@/lib/status";
 import { FundButton } from "@/components/fund-button";
+import { CountdownTimer } from "@/components/countdown-timer";
 import { startCheckout } from "./actions";
 import type { PaymentRequest } from "@/types/payment-request";
 
@@ -19,7 +20,7 @@ export default async function PublicRequestPage({
   const { data: request } = await admin
     .from("payment_requests")
     .select(
-      "id, title, description, amount_cents, currency, review_window_hours, status",
+      "id, title, description, amount_cents, currency, review_window_hours, status, submission_note, review_deadline",
     )
     .eq("id", id)
     .maybeSingle<
@@ -32,12 +33,15 @@ export default async function PublicRequestPage({
         | "currency"
         | "review_window_hours"
         | "status"
+        | "submission_note"
+        | "review_deadline"
       >
     >();
 
   if (!request) notFound();
 
   const isAwaitingPayment = request.status === "awaiting_payment";
+  const isWorkSubmitted = request.status === "work_submitted";
 
   return (
     <div className="flex flex-1 flex-col">
@@ -72,6 +76,20 @@ export default async function PublicRequestPage({
             ) : (
               <FundButton action={startCheckout.bind(null, request.id)} />
             )
+          ) : isWorkSubmitted && request.review_deadline ? (
+            <div className="mt-6 rounded-md bg-black/5 px-4 py-3">
+              <p className="text-sm font-medium">
+                Status: {STATUS_LABELS[request.status]}
+              </p>
+              {request.submission_note && (
+                <p className="mt-2 text-sm text-black/70">
+                  {request.submission_note}
+                </p>
+              )}
+              <div className="mt-2">
+                <CountdownTimer deadline={request.review_deadline} />
+              </div>
+            </div>
           ) : (
             <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">
               Status: {STATUS_LABELS[request.status]}

@@ -4,7 +4,7 @@ import { formatCents } from "@/lib/fee";
 import { STATUS_LABELS } from "@/lib/status";
 import { ActionButton } from "@/components/action-button";
 import { CountdownTimer } from "@/components/countdown-timer";
-import { startCheckout, approveRequest } from "./actions";
+import { startCheckout, approveRequest, disputeRequest } from "./actions";
 import type { PaymentRequest } from "@/types/payment-request";
 
 export default async function PublicRequestPage({
@@ -20,7 +20,7 @@ export default async function PublicRequestPage({
   const { data: request } = await admin
     .from("payment_requests")
     .select(
-      "id, title, description, amount_cents, currency, review_window_hours, status, submission_note, review_deadline",
+      "id, title, description, amount_cents, currency, review_window_hours, status, submission_note, review_deadline, dispute_reason",
     )
     .eq("id", id)
     .maybeSingle<
@@ -35,6 +35,7 @@ export default async function PublicRequestPage({
         | "status"
         | "submission_note"
         | "review_deadline"
+        | "dispute_reason"
       >
     >();
 
@@ -42,6 +43,7 @@ export default async function PublicRequestPage({
 
   const isAwaitingPayment = request.status === "awaiting_payment";
   const isWorkSubmitted = request.status === "work_submitted";
+  const isDisputed = request.status === "disputed";
 
   return (
     <div className="flex flex-1 flex-col">
@@ -98,6 +100,37 @@ export default async function PublicRequestPage({
                 label="Approve & release payment"
                 pendingLabel="Releasing…"
               />
+              <form action={disputeRequest.bind(null, request.id)} className="mt-4">
+                <details>
+                  <summary className="cursor-pointer text-sm text-black/60 underline">
+                    Something wrong? Report a problem instead
+                  </summary>
+                  <textarea
+                    name="reason"
+                    required
+                    rows={3}
+                    placeholder="What's the issue with the delivered work?"
+                    className="mt-2 w-full rounded-md border border-black/20 px-3 py-2 text-sm"
+                  />
+                  <button
+                    type="submit"
+                    className="mt-2 text-sm text-red-600 underline"
+                  >
+                    Flag this as disputed
+                  </button>
+                </details>
+              </form>
+            </div>
+          ) : isDisputed ? (
+            <div className="mt-6 rounded-md bg-black/5 px-4 py-3">
+              <p className="text-sm font-medium">
+                This request is under review by Holdfast — funds remain held.
+              </p>
+              {request.dispute_reason && (
+                <p className="mt-2 text-sm text-black/70">
+                  {request.dispute_reason}
+                </p>
+              )}
             </div>
           ) : (
             <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">

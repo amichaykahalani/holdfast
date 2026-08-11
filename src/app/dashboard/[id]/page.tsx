@@ -101,6 +101,21 @@ export default async function RequestDetailPage({
           </div>
         </div>
       )}
+
+      {request.status === "disputed" && (
+        <div className="mt-8 border-t border-black/10 pt-6">
+          <p className="text-sm font-medium">Disputed — frozen for manual review</p>
+          <p className="mt-1 text-xs text-black/60">
+            The client flagged an issue. Funds stay held until this is
+            resolved manually.
+          </p>
+          {request.dispute_reason && (
+            <p className="mt-2 text-sm text-black/70">
+              {request.dispute_reason}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

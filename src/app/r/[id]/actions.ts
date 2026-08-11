@@ -68,3 +68,31 @@ export async function approveRequest(requestId: string) {
 
   redirect(`/r/${requestId}`);
 }
+
+export async function disputeRequest(requestId: string, formData: FormData) {
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!reason) throw new Error("Please describe the issue.");
+
+  const admin = createAdminClient();
+
+  // Same atomic-claim idempotency pattern as releaseFunds — a conditional
+  // UPDATE...WHERE status = 'work_submitted' both checks and claims in one
+  // step. Zero rows back means it's already past this state (e.g. a
+  // double-submit, or it was just approved/auto-released) — silent no-op.
+  const { data: claimed } = await admin
+    .from("payment_requests")
+    .update({ status: "disputed", dispute_reason: reason })
+    .eq("id", requestId)
+    .eq("status", "work_submitted")
+    .select("id");
+
+  if (claimed && claimed.length > 0) {
+    await admin.from("escrow_events").insert({
+      payment_request_id: requestId,
+      event_type: "disputed",
+      metadata: { reason },
+    });
+  }
+
+  redirect(`/r/${requestId}`);
+}

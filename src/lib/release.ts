@@ -74,12 +74,17 @@ export async function releaseFunds(
       "/v1/payments/payouts",
       {
         method: "POST",
-        // Deterministic per request — doubles as an idempotency key on
-        // PayPal's side too, in case this ever runs twice.
-        headers: { "PayPal-Request-Id": `payout-${requestId}` },
+        // PayPal's sender_batch_id is a *permanent* dedup key on their
+        // side — reusing it (e.g. requestId alone) would make a request
+        // un-retryable forever, including via the deliberate manual
+        // reset-to-work_submitted recovery path used elsewhere in this
+        // app. The real duplicate-payout guard is the atomic claim above
+        // (only one caller ever reaches this point per approval), so this
+        // just needs to avoid an exact same-instant collision.
+        headers: { "PayPal-Request-Id": `payout-${requestId}-${Date.now()}` },
         body: JSON.stringify({
           sender_batch_header: {
-            sender_batch_id: requestId,
+            sender_batch_id: `${requestId}-${Date.now()}`,
             email_subject: "You've been paid via Holdfast",
           },
           items: [

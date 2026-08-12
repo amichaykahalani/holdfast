@@ -139,6 +139,21 @@ export default async function PublicRequestPage({
           )}
         </div>
 
+        <div className="mt-8 space-y-2 text-xs text-black/50">
+          <p>
+            Your payment is held in escrow — the freelancer can&apos;t access
+            it until you approve the work, or the review window closes.
+          </p>
+          <p>
+            Not happy with the delivery? You can flag an issue any time
+            before approving, which freezes the funds for manual review.
+          </p>
+          <p>
+            Stripe handles all card payments and payouts directly. Holdfast
+            never sees or touches your card details.
+          </p>
+        </div>
+
         <p className="mt-6 text-center text-xs text-black/40">
           Payments secured by Stripe · No account required
         </p>

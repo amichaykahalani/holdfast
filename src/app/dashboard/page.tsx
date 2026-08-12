@@ -6,6 +6,14 @@ import type { PaymentRequest } from "@/types/payment-request";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: freelancer } = await supabase
+    .from("freelancers")
+    .select("stripe_onboarding_complete")
+    .eq("id", user!.id)
+    .single();
   const { data: requests } = await supabase
     .from("payment_requests")
     .select("*")
@@ -20,7 +28,11 @@ export default async function DashboardPage() {
           Create your first payment request to get a shareable link.
         </p>
         <Link
-          href="/dashboard/new"
+          href={
+            freelancer?.stripe_onboarding_complete
+              ? "/dashboard/new"
+              : "/onboarding/stripe"
+          }
           className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-black/80"
         >
           New request

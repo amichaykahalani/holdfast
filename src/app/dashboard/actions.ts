@@ -21,6 +21,18 @@ export async function createPaymentRequest(formData: FormData) {
     redirect("/login");
   }
 
+  const { data: freelancer } = await supabase
+    .from("freelancers")
+    .select("stripe_onboarding_complete")
+    .eq("id", user.id)
+    .single();
+
+  if (!freelancer?.stripe_onboarding_complete) {
+    throw new Error(
+      "Connect Stripe before creating a request — otherwise there's no payout account to release funds to.",
+    );
+  }
+
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const amountDollars = Number(formData.get("amount"));

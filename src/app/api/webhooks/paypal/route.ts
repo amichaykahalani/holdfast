@@ -37,14 +37,14 @@ export async function POST(request: Request) {
     case "PAYMENT.CAPTURE.COMPLETED":
       await handleCaptureCompleted(event.resource);
       break;
-    case "PAYMENTS.PAYOUTS-ITEM.SUCCEEDED":
+    case "PAYMENT.PAYOUTS-ITEM.SUCCEEDED":
       await handlePayoutSucceeded(event.resource);
       break;
-    case "PAYMENTS.PAYOUTS-ITEM.FAILED":
-    case "PAYMENTS.PAYOUTS-ITEM.RETURNED":
+    case "PAYMENT.PAYOUTS-ITEM.FAILED":
+    case "PAYMENT.PAYOUTS-ITEM.RETURNED":
       await handlePayoutFailedOrReturned(event.resource, event.event_type);
       break;
-    case "PAYMENTS.PAYOUTS-ITEM.UNCLAIMED":
+    case "PAYMENT.PAYOUTS-ITEM.UNCLAIMED":
       await handlePayoutUnclaimed(event.resource);
       break;
   }

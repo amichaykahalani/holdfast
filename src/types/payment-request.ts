@@ -24,7 +24,8 @@ export interface PaymentRequest {
   currency: string;
   review_window_hours: ReviewWindowHours;
   status: PaymentRequestStatus;
-  stripe_payment_intent_id: string | null;
+  paypal_order_id: string | null;
+  paypal_payout_item_id: string | null;
   funded_at: string | null;
   submitted_at: string | null;
   submission_note: string | null;

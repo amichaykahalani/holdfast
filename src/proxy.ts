@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
 
   const isProtected =
     request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/onboarding");
+    request.nextUrl.pathname.startsWith("/settings");
 
   if (!user && isProtected) {
     const loginUrl = new URL("/login", request.url);
@@ -42,5 +42,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/onboarding/:path*"],
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
 };

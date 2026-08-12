@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   const { data: freelancer } = await supabase
     .from("freelancers")
-    .select("stripe_onboarding_complete")
+    .select("paypal_email")
     .eq("id", user!.id)
     .single();
   const { data: requests } = await supabase
@@ -29,9 +29,7 @@ export default async function DashboardPage() {
         </p>
         <Link
           href={
-            freelancer?.stripe_onboarding_complete
-              ? "/dashboard/new"
-              : "/onboarding/stripe"
+            freelancer?.paypal_email ? "/dashboard/new" : "/settings/payout"
           }
           className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-black/80"
         >

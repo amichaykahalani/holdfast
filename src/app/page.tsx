@@ -61,7 +61,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-black/10 px-6 py-6 text-center text-xs text-black/40">
-        Holdfast · Payments secured by Stripe
+        Holdfast · Payments secured by PayPal
       </footer>
     </div>
   );

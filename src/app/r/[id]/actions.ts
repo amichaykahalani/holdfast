@@ -2,10 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { stripe } from "@/lib/stripe/client";
+import { paypalFetch } from "@/lib/paypal/client";
 import { getBaseUrl } from "@/lib/base-url";
 import { releaseFunds } from "@/lib/release";
 import type { PaymentRequest } from "@/types/payment-request";
+
+interface PayPalOrder {
+  id: string;
+  links: { rel: string; href: string }[];
+}
 
 export async function startCheckout(requestId: string) {
   const admin = createAdminClient();
@@ -25,41 +30,47 @@ export async function startCheckout(requestId: string) {
   const baseUrl = await getBaseUrl();
   const returnUrl = `${baseUrl}/r/${request.id}`;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: request.currency,
-          unit_amount: request.amount_cents,
-          product_data: { name: request.title },
+  const order = await paypalFetch<PayPalOrder>("/v2/checkout/orders", {
+    method: "POST",
+    headers: { "PayPal-Request-Id": `order-${request.id}` },
+    body: JSON.stringify({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          custom_id: request.id,
+          description: request.title.slice(0, 127),
+          amount: {
+            currency_code: request.currency.toUpperCase(),
+            value: (request.amount_cents / 100).toFixed(2),
+          },
         },
+      ],
+      application_context: {
+        brand_name: "Holdfast",
+        shipping_preference: "NO_SHIPPING",
+        user_action: "PAY_NOW",
+        return_url: `${baseUrl}/r/${request.id}/paypal-return`,
+        cancel_url: returnUrl,
       },
-    ],
-    metadata: { payment_request_id: request.id },
-    payment_intent_data: {
-      metadata: { payment_request_id: request.id },
-    },
-    success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: returnUrl,
+    }),
   });
 
-  if (!session.url) throw new Error("Stripe did not return a checkout URL.");
+  const approveUrl = order.links.find((link) => link.rel === "approve")?.href;
+  if (!approveUrl) throw new Error("PayPal did not return an approval URL.");
 
-  redirect(session.url);
+  redirect(approveUrl);
 }
 
 export async function approveRequest(requestId: string) {
   const result = await releaseFunds(requestId, "approved");
 
   if (!result.ok) {
-    if (result.reason === "freelancer_not_onboarded") {
+    if (result.reason === "freelancer_no_payout_email") {
       throw new Error(
-        "The freelancer hasn't finished connecting their payout account yet. Please try again later.",
+        "The freelancer hasn't added a PayPal payout email yet. Please try again later.",
       );
     }
-    if (result.reason === "transfer_failed") {
+    if (result.reason === "payout_request_failed") {
       throw new Error("Something went wrong releasing the payment. Please try again.");
     }
     // "not_eligible" — already handled (e.g. a double-click); fall through

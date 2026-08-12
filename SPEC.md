@@ -30,7 +30,7 @@ Only the **freelancer** has an account. The **client never registers** — they 
 
 | Role | Needs account? | What they do |
 |---|---|---|
-| Freelancer | Yes | Creates requests, connects Stripe (payout), submits work, resolves disputes |
+| Freelancer | Yes | Creates requests, adds PayPal payout email, submits work, resolves disputes |
 | Client | No | Opens a link, pays, approves or disputes — no login required |
 | Admin (you) | Manual/internal only | Reviews disputes via Supabase Studio or a minimal internal view — **no admin UI in v1** |
 
@@ -39,10 +39,10 @@ Only the **freelancer** has an account. The **client never registers** — they 
 ## 3. Scope for v1 (MVP) — Build ONLY This
 
 ✅ In scope:
-- Freelancer signup/login + Stripe Connect (Express) onboarding
+- Freelancer signup/login + PayPal payout email on file
 - Create a payment request (title, description, amount, review window: 24h / 3 days / 7 days)
 - Shareable public link per request
-- Client funds the request via Stripe (card payment), no account needed
+- Client funds the request via PayPal (Orders API — card or PayPal balance), no account needed
 - Freelancer marks work as "submitted" (optional link/note attached)
 - Countdown timer starts on submission
 - Client can "Approve" (manual release) or do nothing (auto-release at timer expiry)
@@ -56,7 +56,7 @@ Only the **freelancer** has an account. The **client never registers** — they 
 - Admin dashboard UI (use Supabase Studio / direct DB queries manually)
 - Mobile app
 - Any dispute *resolution* automation — v1 dispute handling is just "freeze + flag for manual review," resolved by the founder manually via email/Slack
-- Non-card payment methods (e.g., bank transfer, wallets) — Stripe card payments only
+- Payment methods outside PayPal's own checkout (e.g., direct bank transfer) — PayPal Orders/Payouts only
 
 ---
 
@@ -93,8 +93,7 @@ Use Postgres via Supabase.
 | id | uuid, PK | |
 | email | text, unique | |
 | name | text | |
-| stripe_connected_account_id | text, nullable | set after Stripe Express onboarding completes |
-| stripe_onboarding_complete | boolean, default false | |
+| paypal_email | text, nullable | payout destination for PayPal Payouts; "onboarded" = this is set |
 | created_at | timestamptz | |
 
 ### `payment_requests`
@@ -108,7 +107,8 @@ Use Postgres via Supabase.
 | currency | text, default 'usd' | |
 | review_window_hours | integer | 24 / 72 / 168 |
 | status | text | one of the status machine values above |
-| stripe_payment_intent_id | text, nullable | |
+| paypal_order_id | text, nullable | PayPal Order id, set once capture completes |
+| paypal_payout_item_id | text, nullable | PayPal Payouts item id, set once the payout succeeds |
 | funded_at | timestamptz, nullable | |
 | submitted_at | timestamptz, nullable | |
 | submission_note | text, nullable | optional link/description freelancer adds on submission |
@@ -123,8 +123,8 @@ Append-only audit log — never delete or update rows here.
 |---|---|---|
 | id | uuid, PK | |
 | payment_request_id | uuid, FK | |
-| event_type | text | e.g. `created`, `funded`, `submitted`, `approved`, `auto_released`, `disputed`, `resolved_release`, `resolved_refund` |
-| metadata | jsonb, nullable | raw Stripe event data, admin notes, etc. |
+| event_type | text | e.g. `created`, `funded`, `submitted`, `approved`, `auto_released`, `payout_requested`, `disputed`, `resolved_release`, `resolved_refund` |
+| metadata | jsonb, nullable | raw PayPal event data, admin notes, etc. |
 | created_at | timestamptz | |
 
 ---
@@ -134,29 +134,32 @@ Append-only audit log — never delete or update rows here.
 - **Framework:** Next.js (App Router), TypeScript
 - **Hosting:** Vercel
 - **Database + Auth:** Supabase (Postgres, Auth for freelancers only, Row-Level Security enabled)
-- **Payments:** Stripe Connect — Express accounts for freelancer payouts
+- **Payments:** PayPal REST API — Orders API for client funding, Payouts API for freelancer payout (paid to the freelancer's PayPal email, no Connect-style onboarding)
 - **Scheduled jobs:** Vercel Cron (or Supabase Cron) — runs every few minutes to check for expired `review_deadline` values and trigger auto-release
 - **Email:** Resend (transactional emails)
 - **Styling:** Tailwind CSS
 
 ---
 
-## 7. Stripe Integration Details
+## 7. PayPal Integration Details
+
+Switched from Stripe (which doesn't support Israeli-registered platform accounts) to PayPal partway through v1 build. Using the **Payouts API** rather than PayPal Commerce Platform/Partner onboarding — no marketplace-style sub-merchant onboarding, no KYC flow on our side at all.
 
 ### Account model
-- Platform holds funds in its own Stripe balance (freelancer is **not** the merchant of record).
-- Freelancers onboard via **Stripe Express** connected accounts (fastest KYC flow, Stripe-hosted).
+- Platform holds funds in its own PayPal Business balance (freelancer is **not** the merchant of record).
+- Freelancers do not "onboard" in any KYC sense — they just provide a PayPal email (`freelancers.paypal_email`) that funds get paid out to via the Payouts API. That email doesn't need to already be a PayPal account: PayPal gives an unclaimed recipient 30 days to sign up before the payout auto-returns.
 
 ### Payment flow
-1. On request funding: create a Stripe **PaymentIntent** (or Checkout Session) charged to the **platform account**, not directly to the connected account. Capture funds into platform balance.
-2. On release (approve or auto-release): create a Stripe **Transfer** from the platform balance to the freelancer's connected account, amount = `amount_cents - platform_fee`.
-3. Platform fee = `max(round(amount_cents * 0.035), 300)` (3.5%, minimum $3.00 / 300 cents).
+1. On request funding: create a PayPal **Order** (`POST /v2/checkout/orders`, `intent: CAPTURE`) and redirect the client to the returned `approve` link. PayPal redirects back to our `return_url` with the order token; unlike Stripe Checkout, PayPal does **not** auto-capture — our return route explicitly calls `POST /v2/checkout/orders/{id}/capture` to actually move the client's money into the platform balance.
+2. On release (approve or auto-release): create a PayPal **Payout** (`POST /v1/payments/payouts`) to the freelancer's `paypal_email`, amount = `amount_cents - platform_fee`. **This call only returns `PENDING`** — unlike a Stripe Transfer, the real outcome is only known later via webhook (`PAYMENTS.PAYOUTS-ITEM.SUCCEEDED` / `FAILED` / `RETURNED` / `UNCLAIMED`). `status` only becomes `paid_out` once the success webhook lands, not synchronously when the payout is requested.
+3. Platform fee = `max(round(amount_cents * 0.035), 300)` (3.5%, minimum $3.00 / 300 cents) — unchanged by the provider switch.
 
 ### Critical requirements
-- **All state transitions must be driven by Stripe webhook events** (e.g. `payment_intent.succeeded`), not just client-side success callbacks. Never trust the browser alone to confirm a payment.
-- **The release function must be idempotent.** Both the "Approve" button and the cron job may call it — guard against double-transfer (e.g. check `status` is still `work_submitted` inside a DB transaction before transferring, and log to `escrow_events` before calling Stripe).
-- Use Stripe **test mode** exclusively during development. Do not use live keys until explicitly instructed.
-- Store `stripe_payment_intent_id` and `stripe_connected_account_id` for traceability.
+- **All state transitions must be driven by PayPal webhook events** (`PAYMENT.CAPTURE.COMPLETED` for funding, `PAYMENTS.PAYOUTS-ITEM.SUCCEEDED`/`FAILED`/`RETURNED` for release), not just client-side redirects. Never trust the browser alone to confirm a payment — the capture-triggering return route only moves money, it does not itself write `funded`.
+- **The release function must be idempotent.** Both the "Approve" button and the cron job may call it — guard against double-payout (check `status` is still `work_submitted` via a single conditional `UPDATE` before requesting the payout, and log to `escrow_events` before calling PayPal).
+- PayPal signature verification is a **live API call** (`POST /v1/notifications/verify-webhook-signature`), not a local HMAC check like Stripe's — every webhook request costs a round trip to PayPal plus the OAuth2 token needed to make it.
+- Use PayPal **Sandbox** exclusively during development. Do not use live credentials until explicitly instructed.
+- Store `paypal_order_id` and `paypal_payout_item_id` for traceability.
 
 ---
 
@@ -175,7 +178,7 @@ Append-only audit log — never delete or update rows here.
 |---|---|---|
 | `/` | Public | Marketing/landing page explaining Holdfast |
 | `/signup`, `/login` | Public | Freelancer auth |
-| `/onboarding/stripe` | Freelancer | Redirects to Stripe Express onboarding |
+| `/settings/payout` | Freelancer | Set the PayPal email that released funds are paid out to |
 | `/dashboard` | Freelancer | List of their payment requests + statuses |
 | `/dashboard/new` | Freelancer | Create a new payment request |
 | `/dashboard/[id]` | Freelancer | Request detail — mark submitted, view status |
@@ -204,9 +207,9 @@ Send email to client on:
 Build and deploy each slice fully (DB → API → UI) before starting the next. Each slice should be demoable end-to-end.
 
 1. **Freelancer auth + create request → shareable link** (no payment yet)
-2. **Client funds the link via Stripe** (Checkout or Payment Element) — request moves to `funded`
+2. **Client funds the link via PayPal** (Orders API — create + capture) — request moves to `funded`
 3. **Freelancer marks work submitted** → countdown starts, `review_deadline` computed
-4. **Approve button (client) + cron job for auto-release** → both call the same idempotent release function → Stripe Transfer → `paid_out`
+4. **Approve button (client) + cron job for auto-release** → both call the same idempotent release function → PayPal Payout → `paid_out` (once the payout-succeeded webhook confirms — payouts are async, unlike a synchronous Stripe Transfer)
 5. **Dispute flag** → client can mark `disputed`, freezes cron eligibility; founder resolves manually by updating DB status directly (no UI needed for this in v1)
 
 Deploy to Vercel after slice 1 — do not wait until the end to go live.
@@ -216,14 +219,14 @@ Deploy to Vercel after slice 1 — do not wait until the end to go live.
 ## 12. Non-Functional Requirements
 
 - All money values stored and calculated as **integer cents** — never floating point.
-- Every Stripe-related mutation must be **idempotent** and driven by webhooks, not client callbacks.
+- Every PayPal-related mutation must be **idempotent** and driven by webhooks, not client callbacks.
 - Row-Level Security in Supabase: freelancers can only read/write their own `payment_requests`; the public `/r/[id]` route uses a scoped read-only query (via a server action or API route, not direct client-side DB access).
-- Use Stripe test mode + test card numbers throughout development. Flag clearly before any switch to live mode.
+- Use PayPal **Sandbox** + sandbox buyer accounts throughout development. Flag clearly before any switch to live credentials.
 
 ---
 
 ## 13. Open Questions (resolve before or during build, not blockers for starting)
 
-- Exact copy/wording for the client-facing funding page (trust signals: "secured by Stripe" messaging).
+- Exact copy/wording for the client-facing funding page (trust signals: "secured by PayPal" messaging).
 - Whether to support currencies beyond USD in v1 (default: USD only).
 - Whether platform fee is shown to the client at all, or only to the freelancer (default: freelancer only, since client pays the full amount regardless).

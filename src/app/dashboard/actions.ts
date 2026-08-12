@@ -23,13 +23,13 @@ export async function createPaymentRequest(formData: FormData) {
 
   const { data: freelancer } = await supabase
     .from("freelancers")
-    .select("stripe_onboarding_complete")
+    .select("paypal_email")
     .eq("id", user.id)
     .single();
 
-  if (!freelancer?.stripe_onboarding_complete) {
+  if (!freelancer?.paypal_email) {
     throw new Error(
-      "Connect Stripe before creating a request — otherwise there's no payout account to release funds to.",
+      "Add a PayPal payout email before creating a request — otherwise there's nowhere to release funds to.",
     );
   }
 

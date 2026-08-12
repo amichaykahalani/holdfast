@@ -10,24 +10,23 @@ export default async function NewRequestPage() {
 
   const { data: freelancer } = await supabase
     .from("freelancers")
-    .select("stripe_onboarding_complete")
+    .select("paypal_email")
     .eq("id", user!.id)
     .single();
 
-  if (!freelancer?.stripe_onboarding_complete) {
+  if (!freelancer?.paypal_email) {
     return (
       <div className="mx-auto max-w-lg text-center">
-        <h1 className="text-xl font-semibold">Connect Stripe first</h1>
+        <h1 className="text-xl font-semibold">Add a PayPal payout email first</h1>
         <p className="mt-2 text-sm text-black/60">
-          You need a connected Stripe payout account before you can create a
-          request — otherwise there&apos;d be nowhere for released funds to
-          go.
+          You need a payout email on file before you can create a request —
+          otherwise there&apos;d be nowhere for released funds to go.
         </p>
         <Link
-          href="/onboarding/stripe"
+          href="/settings/payout"
           className="mt-6 inline-block rounded-md bg-black px-6 py-3 text-sm font-medium text-white hover:bg-black/80"
         >
-          Connect with Stripe
+          Add payout email
         </Link>
       </div>
     );

@@ -12,10 +12,10 @@ export default async function PublicRequestPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ paypal_pending?: string }>;
 }) {
   const { id } = await params;
-  const { session_id: sessionId } = await searchParams;
+  const { paypal_pending: paypalPending } = await searchParams;
   const admin = createAdminClient();
   const { data: request } = await admin
     .from("payment_requests")
@@ -71,7 +71,7 @@ export default async function PublicRequestPage({
           </p>
 
           {isAwaitingPayment ? (
-            sessionId ? (
+            paypalPending ? (
               <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">
                 Confirming your payment… refresh in a few seconds.
               </p>
@@ -79,7 +79,7 @@ export default async function PublicRequestPage({
               <ActionButton
                 action={startCheckout.bind(null, request.id)}
                 label="Fund this request"
-                pendingLabel="Redirecting to Stripe…"
+                pendingLabel="Redirecting to PayPal…"
               />
             )
           ) : isWorkSubmitted && request.review_deadline ? (
@@ -149,13 +149,13 @@ export default async function PublicRequestPage({
             before approving, which freezes the funds for manual review.
           </p>
           <p>
-            Stripe handles all card payments and payouts directly. Holdfast
-            never sees or touches your card details.
+            PayPal handles all payments and payouts directly. Holdfast never
+            sees or touches your payment details.
           </p>
         </div>
 
         <p className="mt-6 text-center text-xs text-black/40">
-          Payments secured by Stripe · No account required
+          Payments secured by PayPal · No account required
         </p>
       </main>
     </div>

@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   const { data: freelancer } = user
     ? await supabase
         .from("freelancers")
-        .select("stripe_onboarding_complete")
+        .select("paypal_email")
         .eq("id", user.id)
         .single()
     : { data: null };
@@ -31,9 +31,7 @@ export default async function DashboardLayout({
             <span className="text-black/60">{user?.email}</span>
             <Link
               href={
-                freelancer?.stripe_onboarding_complete
-                  ? "/dashboard/new"
-                  : "/onboarding/stripe"
+                freelancer?.paypal_email ? "/dashboard/new" : "/settings/payout"
               }
               className="rounded-md bg-black px-4 py-2 text-white hover:bg-black/80"
             >
@@ -48,12 +46,12 @@ export default async function DashboardLayout({
         </div>
       </header>
 
-      {freelancer && !freelancer.stripe_onboarding_complete && (
+      {freelancer && !freelancer.paypal_email && (
         <Link
-          href="/onboarding/stripe"
+          href="/settings/payout"
           className="bg-amber-100 px-6 py-2 text-center text-sm font-medium text-amber-900 hover:bg-amber-200"
         >
-          Connect Stripe before you can create requests →
+          Add a PayPal payout email before you can create requests →
         </Link>
       )}
 

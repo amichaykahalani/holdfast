@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { paypalFetch } from "@/lib/paypal/client";
 import { getBaseUrl } from "@/lib/base-url";
 import { releaseFunds } from "@/lib/release";
+import type { ActionState } from "@/components/action-button";
 import type { PaymentRequest } from "@/types/payment-request";
 
 interface PayPalOrder {
@@ -12,7 +13,7 @@ interface PayPalOrder {
   links: { rel: string; href: string }[];
 }
 
-export async function startCheckout(requestId: string) {
+export async function startCheckout(requestId: string): Promise<ActionState> {
   const admin = createAdminClient();
   const { data: request } = await admin
     .from("payment_requests")
@@ -22,56 +23,63 @@ export async function startCheckout(requestId: string) {
       Pick<PaymentRequest, "id" | "title" | "amount_cents" | "currency" | "status">
     >();
 
-  if (!request) throw new Error("Request not found.");
+  if (!request) return { error: "Request not found." };
   if (request.status !== "awaiting_payment") {
-    throw new Error("This request is no longer awaiting payment.");
+    return { error: "This request is no longer awaiting payment." };
   }
 
   const baseUrl = await getBaseUrl();
   const returnUrl = `${baseUrl}/r/${request.id}`;
 
-  const order = await paypalFetch<PayPalOrder>("/v2/checkout/orders", {
-    method: "POST",
-    headers: { "PayPal-Request-Id": `order-${request.id}` },
-    body: JSON.stringify({
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          custom_id: request.id,
-          description: request.title.slice(0, 127),
-          amount: {
-            currency_code: request.currency.toUpperCase(),
-            value: (request.amount_cents / 100).toFixed(2),
+  let approveUrl: string | undefined;
+  try {
+    const order = await paypalFetch<PayPalOrder>("/v2/checkout/orders", {
+      method: "POST",
+      headers: { "PayPal-Request-Id": `order-${request.id}` },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            custom_id: request.id,
+            description: request.title.slice(0, 127),
+            amount: {
+              currency_code: request.currency.toUpperCase(),
+              value: (request.amount_cents / 100).toFixed(2),
+            },
           },
+        ],
+        application_context: {
+          brand_name: "Holdfast",
+          shipping_preference: "NO_SHIPPING",
+          user_action: "PAY_NOW",
+          return_url: `${baseUrl}/r/${request.id}/paypal-return`,
+          cancel_url: returnUrl,
         },
-      ],
-      application_context: {
-        brand_name: "Holdfast",
-        shipping_preference: "NO_SHIPPING",
-        user_action: "PAY_NOW",
-        return_url: `${baseUrl}/r/${request.id}/paypal-return`,
-        cancel_url: returnUrl,
-      },
-    }),
-  });
+      }),
+    });
+    approveUrl = order.links.find((link) => link.rel === "approve")?.href;
+  } catch (err) {
+    console.error("startCheckout: PayPal order creation failed:", err);
+    return { error: "Something went wrong starting checkout. Please try again." };
+  }
 
-  const approveUrl = order.links.find((link) => link.rel === "approve")?.href;
-  if (!approveUrl) throw new Error("PayPal did not return an approval URL.");
+  if (!approveUrl) return { error: "PayPal did not return an approval URL." };
 
   redirect(approveUrl);
 }
 
-export async function approveRequest(requestId: string) {
+export async function approveRequest(requestId: string): Promise<ActionState> {
   const result = await releaseFunds(requestId, "approved");
 
   if (!result.ok) {
     if (result.reason === "freelancer_no_payout_email") {
-      throw new Error(
-        "The freelancer hasn't added a PayPal payout email yet. Please try again later.",
-      );
+      return {
+        error:
+          "The freelancer hasn't added a PayPal payout email yet. Please try again later.",
+      };
     }
     if (result.reason === "payout_request_failed") {
-      throw new Error("Something went wrong releasing the payment. Please try again.");
+      return { error: "Something went wrong releasing the payment. Please try again." };
     }
     // "not_eligible" — already handled (e.g. a double-click); fall through
     // to the redirect below so the page just reflects current status.

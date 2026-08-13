@@ -48,7 +48,7 @@ Only the **freelancer** has an account. The **client never registers** — they 
 - Client can "Approve" (manual release) or do nothing (auto-release at timer expiry)
 - Client can flag "Dispute" — freezes timer, funds stay locked, status becomes `disputed`
 - Email notifications at each key state change
-- Platform fee: 3.5% of transaction amount, minimum $3, deducted from freelancer payout, shown transparently before request creation
+- Platform fee: 1% of transaction amount (introductory launch rate), minimum ₪10, deducted from freelancer payout, shown transparently before request creation
 
 ❌ Explicitly OUT of scope for v1 (do not build):
 - Multi-milestone projects
@@ -104,7 +104,7 @@ Use Postgres via Supabase.
 | title | text | |
 | description | text | |
 | amount_cents | integer | store money as integer cents, never floats |
-| currency | text, default 'usd' | |
+| currency | text, default 'ils' | |
 | review_window_hours | integer | 24 / 72 / 168 |
 | status | text | one of the status machine values above |
 | paypal_order_id | text, nullable | PayPal Order id, set once capture completes |
@@ -152,7 +152,7 @@ Switched from Stripe (which doesn't support Israeli-registered platform accounts
 ### Payment flow
 1. On request funding: create a PayPal **Order** (`POST /v2/checkout/orders`, `intent: CAPTURE`) and redirect the client to the returned `approve` link. PayPal redirects back to our `return_url` with the order token; unlike Stripe Checkout, PayPal does **not** auto-capture — our return route explicitly calls `POST /v2/checkout/orders/{id}/capture` to actually move the client's money into the platform balance.
 2. On release (approve or auto-release): create a PayPal **Payout** (`POST /v1/payments/payouts`) to the freelancer's `paypal_email`, amount = `amount_cents - platform_fee`. **This call only returns `PENDING`** — unlike a Stripe Transfer, the real outcome is only known later via webhook (`PAYMENT.PAYOUTS-ITEM.SUCCEEDED` / `FAILED` / `RETURNED` / `UNCLAIMED`). `status` only becomes `paid_out` once the success webhook lands, not synchronously when the payout is requested.
-3. Platform fee = `max(round(amount_cents * 0.035), 300)` (3.5%, minimum $3.00 / 300 cents) — unchanged by the provider switch.
+3. Platform fee = `max(round(amount_cents * 0.01), 1000)` (1% introductory launch rate, minimum ₪10.00 / 1000 agorot).
 
 ### Critical requirements
 - **All state transitions must be driven by PayPal webhook events** (`PAYMENT.CAPTURE.COMPLETED` for funding, `PAYMENT.PAYOUTS-ITEM.SUCCEEDED`/`FAILED`/`RETURNED` for release), not just client-side redirects. Never trust the browser alone to confirm a payment — the capture-triggering return route only moves money, it does not itself write `funded`.
@@ -228,5 +228,5 @@ Deploy to Vercel after slice 1 — do not wait until the end to go live.
 ## 13. Open Questions (resolve before or during build, not blockers for starting)
 
 - Exact copy/wording for the client-facing funding page (trust signals: "secured by PayPal" messaging).
-- Whether to support currencies beyond USD in v1 (default: USD only).
+- Whether to support currencies beyond ILS in v1 (default: ILS only — chosen to target Israeli freelancers/clients and avoid PayPal FX conversion fees).
 - Whether platform fee is shown to the client at all, or only to the freelancer (default: freelancer only, since client pays the full amount regardless).

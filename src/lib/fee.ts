@@ -1,9 +1,10 @@
-// SPEC.md §7: platform fee = 3.5% of the amount, minimum $3.00 (300 cents).
+// SPEC.md §7: platform fee = 1% of the amount (introductory launch rate,
+// down from 3.5%), minimum ₪10.00 (1000 agorot).
 export function platformFeeCents(amountCents: number): number {
-  return Math.max(Math.round(amountCents * 0.035), 300);
+  return Math.max(Math.round(amountCents * 0.01), 1000);
 }
 
-export function formatCents(cents: number, currency = "usd"): string {
+export function formatCents(cents: number, currency = "ils"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency.toUpperCase(),

@@ -54,7 +54,7 @@ export function NewRequestForm() {
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
-        Amount (USD)
+        Amount (₪)
         <input
           name="amount"
           type="number"
@@ -69,7 +69,7 @@ export function NewRequestForm() {
 
       {hasValidAmount && (
         <p className="-mt-2 text-xs text-black/60">
-          Platform fee: {formatCents(feeCents)} (3.5%, min $3) — you&apos;ll
+          Platform fee: {formatCents(feeCents)} (1%, min ₪10) — you&apos;ll
           receive {formatCents(amountCents - feeCents)}. The client pays the
           full {formatCents(amountCents)}.
         </p>

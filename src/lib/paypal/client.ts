@@ -1,8 +1,13 @@
 // Server-only. Thin wrapper over PayPal's REST API — raw fetch rather than
 // their server SDK, since the surface we need (create/capture order,
 // create payout, verify webhook signature) is only a handful of endpoints.
+//
+// `||` (not `??`) deliberately, so an env var that's *present but blank*
+// (e.g. PAYPAL_API_BASE= with nothing after it) still falls back to the
+// default instead of producing an empty base URL — `??` only catches
+// null/undefined, not "".
 const PAYPAL_API_BASE =
-  process.env.PAYPAL_API_BASE ?? "https://api-m.sandbox.paypal.com";
+  process.env.PAYPAL_API_BASE || "https://api-m.sandbox.paypal.com";
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 

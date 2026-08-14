@@ -8,9 +8,13 @@ function formatFigure(ms: number): string {
   const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
   const minutes = totalMinutes % 60;
 
-  if (days > 0) return `${days}י ${hours}ש`;
-  if (hours > 0) return `${hours}ש ${minutes}ד`;
-  return `${minutes}ד`;
+  // Full words, not glued single-letter units (e.g. "2י") — a digit butted
+  // directly against a Hebrew letter gets bidi-reordered in a way that
+  // visually swaps the two number+unit clauses for anyone scanning
+  // left-to-right. A space-separated word stays correctly ordered.
+  if (days > 0) return `${days} ימים ${hours} שעות`;
+  if (hours > 0) return `${hours} שעות ${minutes} דקות`;
+  return `${minutes} דקות`;
 }
 
 interface CountdownTimerProps {

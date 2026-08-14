@@ -29,26 +29,26 @@ export async function createPaymentRequest(formData: FormData) {
 
   if (!freelancer?.paypal_email) {
     throw new Error(
-      "Add a PayPal payout email before creating a request — otherwise there's nowhere to release funds to.",
+      "יש להוסיף אימייל תשלום ב-PayPal לפני יצירת בקשה — אחרת לא יהיה לאן לשחרר את הכספים.",
     );
   }
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const amountDollars = Number(formData.get("amount"));
+  const amountShekels = Number(formData.get("amount"));
   const reviewWindowHours = Number(
     formData.get("review_window_hours"),
   ) as ReviewWindowHours;
 
-  if (!title) throw new Error("Title is required.");
-  if (!Number.isFinite(amountDollars) || amountDollars <= 0) {
-    throw new Error("Amount must be a positive number.");
+  if (!title) throw new Error("כותרת היא שדה חובה.");
+  if (!Number.isFinite(amountShekels) || amountShekels <= 0) {
+    throw new Error("הסכום חייב להיות מספר חיובי.");
   }
   if (!REVIEW_WINDOW_HOURS.includes(reviewWindowHours)) {
-    throw new Error("Invalid review window.");
+    throw new Error("תקופת בדיקה לא תקינה.");
   }
 
-  const amountCents = Math.round(amountDollars * 100);
+  const amountCents = Math.round(amountShekels * 100);
 
   const { data: request, error } = await supabase
     .from("payment_requests")

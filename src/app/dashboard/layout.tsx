@@ -21,25 +21,28 @@ export default async function DashboardLayout({
     : { data: null };
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b border-black/10">
+    <div className="flex flex-1 flex-col bg-paper">
+      <header className="border-b border-line">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" className="text-lg font-semibold">
+          <Link
+            href="/dashboard"
+            className="text-lg font-semibold tracking-tight text-ink"
+          >
             Holdfast
           </Link>
           <nav className="flex items-center gap-4 text-sm">
-            <span className="text-black/60">{user?.email}</span>
+            <span className="text-ink-muted">{user?.email}</span>
             <Link
               href={
                 freelancer?.paypal_email ? "/dashboard/new" : "/settings/payout"
               }
-              className="rounded-md bg-black px-4 py-2 text-white hover:bg-black/80"
+              className="rounded-lg bg-accent px-4 py-2 font-semibold text-white hover:bg-accent-hover"
             >
-              New request
+              בקשה חדשה
             </Link>
             <form action={signOut}>
-              <button type="submit" className="hover:underline">
-                Log out
+              <button type="submit" className="text-ink-muted hover:text-ink">
+                התנתקות
               </button>
             </form>
           </nav>
@@ -49,9 +52,9 @@ export default async function DashboardLayout({
       {freelancer && !freelancer.paypal_email && (
         <Link
           href="/settings/payout"
-          className="bg-amber-100 px-6 py-2 text-center text-sm font-medium text-amber-900 hover:bg-amber-200"
+          className="bg-amber-tint px-6 py-2 text-center text-sm font-medium text-amber hover:opacity-80"
         >
-          Add a PayPal payout email before you can create requests →
+          יש להוסיף אימייל תשלום ב-PayPal לפני יצירת בקשות ←
         </Link>
       )}
 

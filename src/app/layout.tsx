@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Rubik, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Rubik: proper Hebrew + Latin support (Geist Sans has no Hebrew glyphs at
+// all — Google Fonts doesn't offer a Hebrew subset for it). Geist Mono is
+// kept for tabular numeric figures only, where script coverage doesn't
+// matter since it's digits.
+const rubik = Rubik({
+  variable: "--font-rubik",
+  subsets: ["hebrew", "latin"],
 });
 
 const geistMono = Geist_Mono({
@@ -14,14 +18,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Holdfast",
-  description: "Escrow for freelancers — get paid without chasing invoices.",
+  description: "אסקרו לפרילנסרים — קבלו תשלום בלי לרדוף אחרי חשבוניות.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="he"
+      dir="rtl"
+      className={`${rubik.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

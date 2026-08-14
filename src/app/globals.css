@@ -8,12 +8,35 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Explicit system-font fallbacks matter here, not just for load failure —
+     even Rubik's Hebrew coverage could theoretically miss a glyph, and
+     Geist Mono only has subsets: ["latin"] (fine — it's numerals-only).
+     Without a fallback chain a missing glyph renders as tofu instead of
+     silently using a system font that has full Unicode coverage. */
+  --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo,
+    Consolas, monospace;
+
+  /* Holdfast's app-wide palette — warm-neutral paper + a deep teal
+     ("holdfast": an anchor/kelp holdgrip — secure, grounded) as the one
+     bold accent. Amber/clay are semantic, used only for status chips. */
+  --color-paper: #f6f8f6;
+  --color-ink: #12211d;
+  --color-ink-muted: #57685f;
+  --color-ink-faint: #8a9891;
+  --color-line: #dde5e0;
+  --color-accent: #0b6b54;
+  --color-accent-hover: #095940;
+  --color-accent-tint: #e3eee8;
+  --color-accent-tint-line: #bcd6c9;
+  --color-amber: #92661c;
+  --color-amber-tint: #f5ecdc;
+  --color-clay: #93472e;
+  --color-clay-tint: #f6e7e2;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-rubik), Arial, Helvetica, sans-serif;
 }

@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCents } from "@/lib/fee";
-import { STATUS_LABELS } from "@/lib/status";
 import { ActionButton } from "@/components/action-button";
 import { CountdownTimer } from "@/components/countdown-timer";
+import { StatusChip } from "@/components/status-chip";
 import { startCheckout, approveRequest, disputeRequest } from "./actions";
 import type { PaymentRequest } from "@/types/payment-request";
 
@@ -20,7 +20,7 @@ export default async function PublicRequestPage({
   const { data: request } = await admin
     .from("payment_requests")
     .select(
-      "id, title, description, amount_cents, currency, review_window_hours, status, submission_note, review_deadline, dispute_reason",
+      "id, title, description, amount_cents, currency, review_window_hours, status, submission_note, submitted_at, review_deadline, dispute_reason",
     )
     .eq("id", id)
     .maybeSingle<
@@ -34,6 +34,7 @@ export default async function PublicRequestPage({
         | "review_window_hours"
         | "status"
         | "submission_note"
+        | "submitted_at"
         | "review_deadline"
         | "dispute_reason"
       >
@@ -46,118 +47,189 @@ export default async function PublicRequestPage({
   const isDisputed = request.status === "disputed";
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b border-black/10">
-        <div className="mx-auto max-w-lg px-6 py-4 text-lg font-semibold">
-          Holdfast
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-lg flex-1 px-6 py-16">
-        <h1 className="text-2xl font-semibold">{request.title}</h1>
-        {request.description && (
-          <p className="mt-3 text-black/70">{request.description}</p>
-        )}
-
-        <div className="mt-8 rounded-lg border border-black/10 p-6">
-          <p className="text-sm text-black/60">Amount due</p>
-          <p className="text-3xl font-bold">
-            {formatCents(request.amount_cents, request.currency)}
-          </p>
-          <p className="mt-1 text-xs text-black/50">
-            Held in escrow until you approve the work, or released
-            automatically {request.review_window_hours}h after it&apos;s
-            submitted.
-          </p>
-
-          {isAwaitingPayment ? (
-            paypalPending ? (
-              <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">
-                Confirming your payment… refresh in a few seconds.
-              </p>
-            ) : (
-              <ActionButton
-                action={startCheckout.bind(null, request.id)}
-                label="Fund this request"
-                pendingLabel="Redirecting to PayPal…"
+    <div className="flex flex-1 flex-col bg-paper">
+      <div className="mx-auto w-full max-w-lg flex-1 px-6">
+        <header className="flex items-center justify-between border-b border-line py-7">
+          <div className="flex items-center gap-2 text-[1.0625rem] font-semibold tracking-tight text-ink">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M10 1.5C10 1.5 4.5 5 4.5 10.5C4.5 14.5 7 17.5 10 18.5C13 17.5 15.5 14.5 15.5 10.5C15.5 5 10 1.5 10 1.5Z"
+                stroke="#0b6b54"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
               />
-            )
-          ) : isWorkSubmitted && request.review_deadline ? (
-            <div className="mt-6 rounded-md bg-black/5 px-4 py-3">
-              <p className="text-sm font-medium">
-                Status: {STATUS_LABELS[request.status]}
-              </p>
-              {request.submission_note && (
-                <p className="mt-2 text-sm text-black/70">
-                  {request.submission_note}
-                </p>
-              )}
-              <div className="mt-2">
-                <CountdownTimer deadline={request.review_deadline} />
-              </div>
-              <ActionButton
-                action={approveRequest.bind(null, request.id)}
-                label="Approve & release payment"
-                pendingLabel="Releasing…"
+              <path d="M10 6V13" stroke="#0b6b54" strokeWidth="1.4" strokeLinecap="round" />
+              <path
+                d="M7.5 9L10 6L12.5 9"
+                stroke="#0b6b54"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-              <form action={disputeRequest.bind(null, request.id)} className="mt-4">
-                <details>
-                  <summary className="cursor-pointer text-sm text-black/60 underline">
-                    Something wrong? Report a problem instead
-                  </summary>
-                  <textarea
-                    name="reason"
-                    required
-                    rows={3}
-                    placeholder="What's the issue with the delivered work?"
-                    className="mt-2 w-full rounded-md border border-black/20 px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="submit"
-                    className="mt-2 text-sm text-red-600 underline"
-                  >
-                    Flag this as disputed
-                  </button>
-                </details>
-              </form>
-            </div>
-          ) : isDisputed ? (
-            <div className="mt-6 rounded-md bg-black/5 px-4 py-3">
-              <p className="text-sm font-medium">
-                This request is under review by Holdfast — funds remain held.
-              </p>
-              {request.dispute_reason && (
-                <p className="mt-2 text-sm text-black/70">
-                  {request.dispute_reason}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="mt-6 rounded-md bg-black/5 px-4 py-3 text-sm font-medium">
-              Status: {STATUS_LABELS[request.status]}
+            </svg>
+            Holdfast
+          </div>
+          <span className="text-xs text-ink-muted">מאובטח על ידי PayPal</span>
+        </header>
+
+        <main className="pb-20 pt-11">
+          <h1 className="text-balance text-2xl font-semibold tracking-tight text-ink">
+            {request.title}
+          </h1>
+          {request.description && (
+            <p className="mt-2 text-[0.9375rem] text-ink-muted">
+              {request.description}
             </p>
           )}
-        </div>
 
-        <div className="mt-8 space-y-2 text-xs text-black/50">
-          <p>
-            Your payment is held in escrow — the freelancer can&apos;t access
-            it until you approve the work, or the review window closes.
-          </p>
-          <p>
-            Not happy with the delivery? You can flag an issue any time
-            before approving, which freezes the funds for manual review.
-          </p>
-          <p>
-            PayPal handles all payments and payouts directly. Holdfast never
-            sees or touches your payment details.
-          </p>
-        </div>
+          <div className="mt-7 rounded-[10px] border border-line bg-white p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="mb-2 text-[11px] font-semibold tracking-wider text-ink-faint">
+                  סכום לתשלום
+                </p>
+                <div className="font-mono text-[2.5rem] font-medium leading-none tracking-tight tabular-nums text-ink">
+                  {formatCents(request.amount_cents, request.currency)}
+                </div>
+              </div>
+              <div className="pt-0.5">
+                <StatusChip status={request.status} />
+              </div>
+            </div>
 
-        <p className="mt-6 text-center text-xs text-black/40">
-          Payments secured by PayPal · No account required
-        </p>
-      </main>
+            <p className="mt-5 border-t border-line pt-[1.1rem] text-[0.8125rem] text-ink-muted">
+              מוחזק בנאמנות עד לאישור העבודה על ידיכם, או שחרור אוטומטי{" "}
+              {request.review_window_hours} שעות לאחר המסירה.
+            </p>
+
+            {isAwaitingPayment ? (
+              paypalPending ? (
+                <p className="mt-5 rounded-lg bg-accent-tint px-4 py-3 text-sm font-medium text-accent">
+                  מאשרים את התשלום… רעננו בעוד כמה שניות.
+                </p>
+              ) : (
+                <ActionButton
+                  action={startCheckout.bind(null, request.id)}
+                  label="מימון הבקשה"
+                  pendingLabel="מפנים ל-PayPal…"
+                />
+              )
+            ) : isWorkSubmitted && request.review_deadline ? (
+              <>
+                {request.submission_note && (
+                  <div className="mt-5 border-t border-line pt-[1.1rem]">
+                    <span className="mb-1 block text-sm font-semibold text-ink">
+                      נמסר
+                    </span>
+                    {/^https?:\/\//.test(request.submission_note) ? (
+                      <a
+                        href={request.submission_note}
+                        dir="ltr"
+                        className="block break-all text-start text-sm text-accent hover:text-accent-hover"
+                      >
+                        {request.submission_note}
+                      </a>
+                    ) : (
+                      <p className="text-sm text-ink-muted">
+                        {request.submission_note}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-4">
+                  <CountdownTimer
+                    deadline={request.review_deadline}
+                    submittedAt={request.submitted_at ?? undefined}
+                    totalHours={request.review_window_hours}
+                  />
+                </div>
+
+                <ActionButton
+                  action={approveRequest.bind(null, request.id)}
+                  label="אישור ושחרור התשלום"
+                  pendingLabel="משחררים…"
+                />
+
+                <form
+                  action={disputeRequest.bind(null, request.id)}
+                  className="mt-3"
+                >
+                  <details>
+                    <summary className="cursor-pointer text-center text-[0.8125rem] text-ink-muted underline decoration-line underline-offset-2 hover:text-clay">
+                      יש בעיה? דווחו על כך במקום
+                    </summary>
+                    <textarea
+                      name="reason"
+                      required
+                      rows={3}
+                      placeholder="מה הבעיה עם העבודה שנמסרה?"
+                      className="mt-3 w-full rounded-lg border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-clay focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="mt-2 w-full rounded-lg border border-line px-4 py-2.5 text-sm font-semibold text-clay hover:border-clay/40 hover:bg-clay-tint"
+                    >
+                      סימון כבמחלוקת
+                    </button>
+                  </details>
+                </form>
+              </>
+            ) : isDisputed ? (
+              <div className="mt-5 border-t border-line pt-[1.1rem]">
+                <span className="mb-1 block text-sm font-semibold text-ink">
+                  בבדיקה על ידי Holdfast
+                </span>
+                <p className="text-sm text-ink-muted">
+                  הכספים נשארים מוחזקים בזמן שהבעיה נבדקת ידנית.
+                </p>
+                {request.dispute_reason && (
+                  <p className="mt-3 text-sm text-ink-muted">
+                    <span className="font-semibold text-ink">ההערה שלכם</span>
+                    <br />
+                    {request.dispute_reason}
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mt-9 flex flex-col gap-4">
+            <div className="flex gap-3.5">
+              <div className="mt-0.5 w-0.5 flex-none rounded-full bg-accent-tint-line" />
+              <p className="text-[0.8125rem] text-ink-muted">
+                <strong className="font-semibold text-ink">
+                  הכספים מוחזקים, לא מוצאים.
+                </strong>{" "}
+                לפרילנסר/ית אין גישה לתשלום עד שתאשרו את העבודה, או עד
+                שתקופת הבדיקה תסתיים.
+              </p>
+            </div>
+            <div className="flex gap-3.5">
+              <div className="mt-0.5 w-0.5 flex-none rounded-full bg-accent-tint-line" />
+              <p className="text-[0.8125rem] text-ink-muted">
+                <strong className="font-semibold text-ink">
+                  אפשר לדווח על בעיה בכל שלב
+                </strong>{" "}
+                לפני האישור — זה מקפיא את הכספים לבדיקה ידנית.
+              </p>
+            </div>
+            <div className="flex gap-3.5">
+              <div className="mt-0.5 w-0.5 flex-none rounded-full bg-accent-tint-line" />
+              <p className="text-[0.8125rem] text-ink-muted">
+                <strong className="font-semibold text-ink">
+                  PayPal מטפל בכסף.
+                </strong>{" "}
+                Holdfast לעולם לא רואה או שומרת את פרטי התשלום שלכם.
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-11 text-center text-xs text-ink-faint">
+            תשלומים מאובטחים על ידי PayPal · לא נדרש חשבון
+          </p>
+        </main>
+      </div>
     </div>
   );
 }

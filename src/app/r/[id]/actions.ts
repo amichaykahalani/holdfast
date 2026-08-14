@@ -23,9 +23,9 @@ export async function startCheckout(requestId: string): Promise<ActionState> {
       Pick<PaymentRequest, "id" | "title" | "amount_cents" | "currency" | "status">
     >();
 
-  if (!request) return { error: "Request not found." };
+  if (!request) return { error: "הבקשה לא נמצאה." };
   if (request.status !== "awaiting_payment") {
-    return { error: "This request is no longer awaiting payment." };
+    return { error: "הבקשה כבר אינה ממתינה לתשלום." };
   }
 
   const baseUrl = await getBaseUrl();
@@ -60,10 +60,10 @@ export async function startCheckout(requestId: string): Promise<ActionState> {
     approveUrl = order.links.find((link) => link.rel === "approve")?.href;
   } catch (err) {
     console.error("startCheckout: PayPal order creation failed:", err);
-    return { error: "Something went wrong starting checkout. Please try again." };
+    return { error: "משהו השתבש בתחילת התשלום. נסו שוב." };
   }
 
-  if (!approveUrl) return { error: "PayPal did not return an approval URL." };
+  if (!approveUrl) return { error: "PayPal לא החזיר קישור לאישור תשלום." };
 
   redirect(approveUrl);
 }
@@ -74,12 +74,11 @@ export async function approveRequest(requestId: string): Promise<ActionState> {
   if (!result.ok) {
     if (result.reason === "freelancer_no_payout_email") {
       return {
-        error:
-          "The freelancer hasn't added a PayPal payout email yet. Please try again later.",
+        error: "הפרילנסר/ית עדיין לא הוסיפו אימייל תשלום ב-PayPal. נסו שוב מאוחר יותר.",
       };
     }
     if (result.reason === "payout_request_failed") {
-      return { error: "Something went wrong releasing the payment. Please try again." };
+      return { error: "משהו השתבש בשחרור התשלום. נסו שוב." };
     }
     // "not_eligible" — already handled (e.g. a double-click); fall through
     // to the redirect below so the page just reflects current status.
@@ -90,7 +89,7 @@ export async function approveRequest(requestId: string): Promise<ActionState> {
 
 export async function disputeRequest(requestId: string, formData: FormData) {
   const reason = String(formData.get("reason") ?? "").trim();
-  if (!reason) throw new Error("Please describe the issue.");
+  if (!reason) throw new Error("נא לתאר את הבעיה.");
 
   const admin = createAdminClient();
 

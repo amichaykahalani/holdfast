@@ -13,7 +13,7 @@ export async function savePayoutEmail(formData: FormData) {
 
   const email = String(formData.get("paypal_email") ?? "").trim();
   if (!email || !email.includes("@")) {
-    throw new Error("Enter a valid email address.");
+    throw new Error("נא להזין כתובת אימייל תקינה.");
   }
 
   const { error } = await supabase

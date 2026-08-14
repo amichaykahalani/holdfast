@@ -18,7 +18,7 @@ export async function markSubmitted(requestId: string, formData: FormData) {
     .eq("id", requestId)
     .single();
 
-  if (!request) throw new Error("Request not found.");
+  if (!request) throw new Error("הבקשה לא נמצאה.");
 
   const submissionNote = String(formData.get("submission_note") ?? "").trim();
   const now = new Date();
@@ -41,7 +41,7 @@ export async function markSubmitted(requestId: string, formData: FormData) {
 
   if (error) throw new Error(error.message);
   if (!updated || updated.length === 0) {
-    throw new Error("This request is not currently awaiting submission.");
+    throw new Error("הבקשה אינה ממתינה כרגע למסירה.");
   }
 
   const admin = createAdminClient();

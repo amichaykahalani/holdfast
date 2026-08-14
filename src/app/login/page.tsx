@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (signInError) {
-      setError(signInError.message);
+      setError(translateAuthError(signInError.message));
       return;
     }
 
@@ -36,45 +37,45 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex max-w-sm flex-1 flex-col justify-center px-6 py-20">
-      <h1 className="text-2xl font-semibold">Log in</h1>
+      <h1 className="text-2xl font-semibold text-ink">התחברות</h1>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
-          Email
+        <label className="flex flex-col gap-1 text-sm text-ink">
+          אימייל
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-black/20 px-3 py-2"
+            className="rounded-lg border border-line px-3 py-2 focus:border-accent focus:outline-none"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Password
+        <label className="flex flex-col gap-1 text-sm text-ink">
+          סיסמה
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-black/20 px-3 py-2"
+            className="rounded-lg border border-line px-3 py-2 focus:border-accent focus:outline-none"
           />
         </label>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-clay">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 rounded-md bg-black px-4 py-2 text-white hover:bg-black/80 disabled:opacity-50"
+          className="mt-2 rounded-lg bg-accent px-4 py-2 font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
         >
-          {loading ? "Logging in…" : "Log in"}
+          {loading ? "מתחבר…" : "התחברות"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-black/60">
-        Don&apos;t have an account?{" "}
-        <Link href="/signup" className="underline">
-          Sign up
+      <p className="mt-6 text-center text-sm text-ink-muted">
+        עדיין אין לכם חשבון?{" "}
+        <Link href="/signup" className="text-accent hover:text-accent-hover">
+          הרשמה
         </Link>
       </p>
     </main>

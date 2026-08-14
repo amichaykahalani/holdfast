@@ -5,7 +5,9 @@ export function platformFeeCents(amountCents: number): number {
 }
 
 export function formatCents(cents: number, currency = "ils"): string {
-  return new Intl.NumberFormat("en-US", {
+  // he-IL, not en-US: puts the ₪ symbol after the number ("2,000.00 ₪"),
+  // which is how it actually reads in Hebrew — en-US would put it first.
+  return new Intl.NumberFormat("he-IL", {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(cents / 100);

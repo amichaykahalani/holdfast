@@ -17,16 +17,18 @@ export default async function NewRequestPage() {
   if (!freelancer?.paypal_email) {
     return (
       <div className="mx-auto max-w-lg text-center">
-        <h1 className="text-xl font-semibold">Add a PayPal payout email first</h1>
-        <p className="mt-2 text-sm text-black/60">
-          You need a payout email on file before you can create a request —
-          otherwise there&apos;d be nowhere for released funds to go.
+        <h1 className="text-xl font-semibold text-ink">
+          יש להוסיף אימייל תשלום ב-PayPal קודם
+        </h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          נדרש אימייל תשלום שמור לפני יצירת בקשה — אחרת לא יהיה לאן לשחרר את
+          הכספים.
         </p>
         <Link
           href="/settings/payout"
-          className="mt-6 inline-block rounded-md bg-black px-6 py-3 text-sm font-medium text-white hover:bg-black/80"
+          className="mt-6 inline-block rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-hover"
         >
-          Add payout email
+          הוספת אימייל תשלום
         </Link>
       </div>
     );
@@ -34,7 +36,7 @@ export default async function NewRequestPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="text-xl font-semibold">New payment request</h1>
+      <h1 className="text-xl font-semibold text-ink">בקשת תשלום חדשה</h1>
       <NewRequestForm />
     </div>
   );

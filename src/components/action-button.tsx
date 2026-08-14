@@ -37,11 +37,11 @@ export function ActionButton({
       <button
         type="submit"
         disabled={isPending}
-        className="mt-6 w-full rounded-md bg-black px-4 py-3 font-medium text-white hover:bg-black/80 disabled:opacity-50"
+        className="mt-5 w-full rounded-lg bg-accent px-4 py-3 text-[0.9375rem] font-semibold tracking-tight text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
         {isPending ? pendingLabel : label}
       </button>
-      {state.error && <p className="mt-2 text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="mt-2 text-sm text-clay">{state.error}</p>}
     </form>
   );
 }

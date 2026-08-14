@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getBaseUrl } from "@/lib/base-url";
 import { formatCents, platformFeeCents } from "@/lib/fee";
-import { STATUS_LABELS } from "@/lib/status";
+import { StatusChip } from "@/components/status-chip";
 import { CopyLink } from "@/components/copy-link";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { markSubmitted } from "./actions";
@@ -30,33 +30,33 @@ export default async function RequestDetailPage({
   return (
     <div className="mx-auto max-w-lg">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{request.title}</h1>
-        <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-medium">
-          {STATUS_LABELS[request.status]}
-        </span>
+        <h1 className="text-xl font-semibold text-ink">{request.title}</h1>
+        <StatusChip status={request.status} />
       </div>
 
       {request.description && (
-        <p className="mt-3 text-sm text-black/70">{request.description}</p>
+        <p className="mt-3 text-sm text-ink-muted">{request.description}</p>
       )}
 
-      <dl className="mt-6 grid grid-cols-2 gap-y-2 text-sm">
-        <dt className="text-black/60">Amount</dt>
-        <dd>{formatCents(request.amount_cents, request.currency)}</dd>
-        <dt className="text-black/60">Platform fee</dt>
-        <dd>{formatCents(feeCents, request.currency)}</dd>
-        <dt className="text-black/60">You receive</dt>
-        <dd>
+      <dl className="mt-6 grid grid-cols-2 gap-y-2 text-sm font-mono tabular-nums">
+        <dt className="font-sans text-ink-muted">סכום</dt>
+        <dd className="text-ink">
+          {formatCents(request.amount_cents, request.currency)}
+        </dd>
+        <dt className="font-sans text-ink-muted">עמלת פלטפורמה</dt>
+        <dd className="text-ink">{formatCents(feeCents, request.currency)}</dd>
+        <dt className="font-sans text-ink-muted">תקבלו</dt>
+        <dd className="text-ink">
           {formatCents(request.amount_cents - feeCents, request.currency)}
         </dd>
-        <dt className="text-black/60">Review window</dt>
-        <dd>{request.review_window_hours}h</dd>
+        <dt className="font-sans text-ink-muted">תקופת בדיקה</dt>
+        <dd className="text-ink">{request.review_window_hours} שעות</dd>
       </dl>
 
       <div className="mt-8">
-        <p className="text-sm font-medium">Shareable link</p>
-        <p className="mt-1 text-xs text-black/60">
-          Send this to your client — no account needed on their end.
+        <p className="text-sm font-medium text-ink">קישור לשיתוף</p>
+        <p className="mt-1 text-xs text-ink-muted">
+          שלחו את זה ללקוח — לא נדרש חשבון מהצד שלו.
         </p>
         <div className="mt-2">
           <CopyLink url={shareUrl} />
@@ -66,51 +66,56 @@ export default async function RequestDetailPage({
       {request.status === "funded" && (
         <form
           action={markSubmitted.bind(null, request.id)}
-          className="mt-8 border-t border-black/10 pt-6"
+          className="mt-8 border-t border-line pt-6"
         >
-          <p className="text-sm font-medium">Mark work as submitted</p>
-          <p className="mt-1 text-xs text-black/60">
-            Starts the {request.review_window_hours}h review countdown.
-            Optionally attach a link or note for your client.
+          <p className="text-sm font-medium text-ink">סימון עבודה כנמסרה</p>
+          <p className="mt-1 text-xs text-ink-muted">
+            מתחיל את ספירת הבדיקה של {request.review_window_hours} שעות. אפשר
+            לצרף קישור או הערה עבור הלקוח.
           </p>
           <textarea
             name="submission_note"
             rows={3}
-            placeholder="e.g. https://your-delivery-link.com"
-            className="mt-3 w-full rounded-md border border-black/20 px-3 py-2 text-sm"
+            placeholder="למשל https://your-delivery-link.com"
+            className="mt-3 w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-accent focus:outline-none"
           />
           <button
             type="submit"
-            className="mt-3 rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-black/80"
+            className="mt-3 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
           >
-            Mark as submitted
+            סימון כנמסר
           </button>
         </form>
       )}
 
       {request.status === "work_submitted" && request.review_deadline && (
-        <div className="mt-8 border-t border-black/10 pt-6">
-          <p className="text-sm font-medium">Review in progress</p>
+        <div className="mt-8 border-t border-line pt-6">
+          <p className="text-sm font-medium text-ink">בבדיקה</p>
           {request.submission_note && (
-            <p className="mt-2 text-sm text-black/70">
+            <p className="mt-2 text-sm text-ink-muted">
               {request.submission_note}
             </p>
           )}
           <div className="mt-2">
-            <CountdownTimer deadline={request.review_deadline} />
+            <CountdownTimer
+              deadline={request.review_deadline}
+              submittedAt={request.submitted_at ?? undefined}
+              totalHours={request.review_window_hours}
+            />
           </div>
         </div>
       )}
 
       {request.status === "disputed" && (
-        <div className="mt-8 border-t border-black/10 pt-6">
-          <p className="text-sm font-medium">Disputed — frozen for manual review</p>
-          <p className="mt-1 text-xs text-black/60">
-            The client flagged an issue. Funds stay held until this is
-            resolved manually.
+        <div className="mt-8 border-t border-line pt-6">
+          <p className="text-sm font-medium text-ink">
+            במחלוקת — הוקפא לבדיקה ידנית
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">
+            הלקוח דיווח על בעיה. הכספים יישארו מוחזקים עד לפתרון ידני.
           </p>
           {request.dispute_reason && (
-            <p className="mt-2 text-sm text-black/70">
+            <p className="mt-2 text-sm text-ink-muted">
               {request.dispute_reason}
             </p>
           )}

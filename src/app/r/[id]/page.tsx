@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCents } from "@/lib/fee";
 import { ActionButton } from "@/components/action-button";
+import { ApproveWithConsent } from "@/components/approve-with-consent";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { StatusChip } from "@/components/status-chip";
 import { startCheckout, approveRequest, disputeRequest } from "./actions";
@@ -145,10 +146,8 @@ export default async function PublicRequestPage({
                   />
                 </div>
 
-                <ActionButton
+                <ApproveWithConsent
                   action={approveRequest.bind(null, request.id)}
-                  label="אישור ושחרור התשלום"
-                  pendingLabel="משחררים…"
                 />
 
                 <form

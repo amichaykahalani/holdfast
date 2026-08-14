@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { paypalFetch } from "@/lib/paypal/client";
 import { getBaseUrl } from "@/lib/base-url";
 import { releaseFunds } from "@/lib/release";
+import { RELEASE_CONSENT_TEXT } from "@/lib/consent";
 import type { ActionState } from "@/components/action-button";
 import type { PaymentRequest } from "@/types/payment-request";
 
@@ -68,7 +69,23 @@ export async function startCheckout(requestId: string): Promise<ActionState> {
   redirect(approveUrl);
 }
 
-export async function approveRequest(requestId: string): Promise<ActionState> {
+export async function approveRequest(
+  requestId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const consentText = String(formData.get("consent_text") ?? "");
+  if (consentText !== RELEASE_CONSENT_TEXT) {
+    return { error: "יש לאשר את התנאים לפני שחרור התשלום." };
+  }
+
+  const admin = createAdminClient();
+  await admin.from("escrow_events").insert({
+    payment_request_id: requestId,
+    event_type: "client_release_consent",
+    metadata: { consent_text: consentText },
+  });
+
   const result = await releaseFunds(requestId, "approved");
 
   if (!result.ok) {

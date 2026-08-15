@@ -24,11 +24,14 @@ export default async function DashboardLayout({
     <div className="flex flex-1 flex-col bg-paper">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link
-            href="/dashboard"
-            className="text-lg font-semibold tracking-tight text-ink"
-          >
-            Holdfast
+          <Link href="/dashboard" className="flex flex-col leading-tight">
+            <span className="text-lg font-semibold tracking-tight text-ink">
+              Kept
+            </span>
+            <span dir="ltr" className="text-xs text-ink-muted">
+              Your money is{" "}
+              <span className="font-semibold text-accent">Kept</span>.
+            </span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <span className="text-ink-muted">{user?.email}</span>

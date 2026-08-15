@@ -51,7 +51,7 @@ export default async function PublicRequestPage({
     <div className="flex flex-1 flex-col bg-paper">
       <div className="mx-auto w-full max-w-lg flex-1 px-6">
         <header className="flex items-center justify-between border-b border-line py-7">
-          <div className="flex items-center gap-2 text-[1.0625rem] font-semibold tracking-tight text-ink">
+          <div className="flex items-center gap-2">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
                 d="M10 1.5C10 1.5 4.5 5 4.5 10.5C4.5 14.5 7 17.5 10 18.5C13 17.5 15.5 14.5 15.5 10.5C15.5 5 10 1.5 10 1.5Z"
@@ -68,7 +68,15 @@ export default async function PublicRequestPage({
                 strokeLinejoin="round"
               />
             </svg>
-            Holdfast
+            <div className="flex flex-col leading-tight">
+              <span className="text-[1.0625rem] font-semibold tracking-tight text-ink">
+                Kept
+              </span>
+              <span dir="ltr" className="text-[0.6875rem] text-ink-muted">
+                Your money is{" "}
+                <span className="font-semibold text-accent">Kept</span>.
+              </span>
+            </div>
           </div>
           <span className="text-xs text-ink-muted">מאובטח על ידי PayPal</span>
         </header>
@@ -177,7 +185,7 @@ export default async function PublicRequestPage({
             ) : isDisputed ? (
               <div className="mt-5 border-t border-line pt-[1.1rem]">
                 <span className="mb-1 block text-sm font-semibold text-ink">
-                  בבדיקה על ידי Holdfast
+                  בבדיקה על ידי Kept
                 </span>
                 <p className="text-sm text-ink-muted">
                   הכספים נשארים מוחזקים בזמן שהבעיה נבדקת ידנית.
@@ -219,7 +227,7 @@ export default async function PublicRequestPage({
                 <strong className="font-semibold text-ink">
                   PayPal מטפל בכסף.
                 </strong>{" "}
-                Holdfast לעולם לא רואה או שומרת את פרטי התשלום שלכם.
+                Kept לעולם לא רואה או שומרת את פרטי התשלום שלכם.
               </p>
             </div>
           </div>

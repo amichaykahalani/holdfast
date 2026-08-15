@@ -1,12 +1,12 @@
-# Holdfast — Product & Technical Specification
+# Kept — Product & Technical Specification
 
-> This is the source of truth for building Holdfast. Treat every detail here as a firm requirement unless explicitly marked "future / v2". When in doubt, favor the simplest implementation that satisfies the requirement.
+> This is the source of truth for building Kept. Treat every detail here as a firm requirement unless explicitly marked "future / v2". When in doubt, favor the simplest implementation that satisfies the requirement.
 
 ---
 
 ## 1. Product Overview
 
-**Holdfast** is a low-friction escrow platform for independent freelancers (designers, developers, consultants) and their direct clients.
+**Kept** is a low-friction escrow platform for independent freelancers (designers, developers, consultants) and their direct clients.
 
 ### Problem
 1. Freelancers waste time chasing unpaid invoices and risk non-payment after delivering work.
@@ -176,7 +176,7 @@ Switched from Stripe (which doesn't support Israeli-registered platform accounts
 
 | Route | Auth | Purpose |
 |---|---|---|
-| `/` | Public | Marketing/landing page explaining Holdfast |
+| `/` | Public | Marketing/landing page explaining Kept |
 | `/signup`, `/login` | Public | Freelancer auth |
 | `/settings/payout` | Freelancer | Set the PayPal email that released funds are paid out to |
 | `/dashboard` | Freelancer | List of their payment requests + statuses |

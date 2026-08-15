@@ -50,7 +50,7 @@ export async function startCheckout(requestId: string): Promise<ActionState> {
           },
         ],
         application_context: {
-          brand_name: "Holdfast",
+          brand_name: "Kept",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
           return_url: `${baseUrl}/r/${request.id}/paypal-return`,

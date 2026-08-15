@@ -85,14 +85,14 @@ export async function releaseFunds(
         body: JSON.stringify({
           sender_batch_header: {
             sender_batch_id: `${requestId}-${Date.now()}`,
-            email_subject: "You've been paid via Holdfast",
+            email_subject: "You've been paid via Kept",
           },
           items: [
             {
               recipient_type: "EMAIL",
               receiver: freelancer.paypal_email,
               sender_item_id: requestId,
-              note: "Payment released via Holdfast",
+              note: "Payment released via Kept",
               amount: {
                 value: (payoutAmount / 100).toFixed(2),
                 currency: claimed.currency.toUpperCase(),

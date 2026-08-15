@@ -6,7 +6,7 @@ export default function LandingPage() {
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <span className="text-lg font-semibold tracking-tight text-ink">
-            Holdfast
+            Kept
           </span>
           <nav className="flex items-center gap-4 text-sm">
             <Link href="/login" className="text-ink-muted hover:text-ink">
@@ -23,11 +23,14 @@ export default function LandingPage() {
       </header>
 
       <main className="mx-auto flex max-w-3xl flex-1 flex-col justify-center px-6 py-20 text-center">
-        <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+        <p dir="ltr" className="text-lg text-ink-muted">
+          Your money is <span className="font-semibold text-accent">Kept</span>.
+        </p>
+        <h1 className="mt-3 text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
           קבלו תשלום בלי לרדוף אחרי חשבוניות.
         </h1>
         <p className="mt-6 text-lg text-ink-muted">
-          Holdfast מחזיקה את כספי הלקוח בנאמנות עד לאישור העבודה — או משחררת
+          Kept מחזיקה את כספי הלקוח בנאמנות עד לאישור העבודה — או משחררת
           אותם אוטומטית כשתקופת הבדיקה מסתיימת. בלי חוזים, בלי טפסי בנק, ובלי
           צורך בחשבון ללקוח.
         </p>
@@ -63,7 +66,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line px-6 py-6 text-center text-xs text-ink-faint">
-        Holdfast · תשלומים מאובטחים על ידי PayPal
+        Kept · תשלומים מאובטחים על ידי PayPal
       </footer>
     </div>
   );

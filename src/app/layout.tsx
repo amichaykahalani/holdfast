@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Holdfast",
+  title: "Kept",
   description: "אסקרו לפרילנסרים — קבלו תשלום בלי לרדוף אחרי חשבוניות.",
 };
 

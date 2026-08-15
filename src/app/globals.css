@@ -17,9 +17,9 @@
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo,
     Consolas, monospace;
 
-  /* Holdfast's app-wide palette — warm-neutral paper + a deep teal
-     ("holdfast": an anchor/kelp holdgrip — secure, grounded) as the one
-     bold accent. Amber/clay are semantic, used only for status chips. */
+  /* Kept's app-wide palette — warm-neutral paper + a deep teal, signaling
+     security and trust, as the one bold accent. Amber/clay are semantic,
+     used only for status chips. */
   --color-paper: #f6f8f6;
   --color-ink: #12211d;
   --color-ink-muted: #57685f;

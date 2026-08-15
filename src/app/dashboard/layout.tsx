@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "./actions";
 
 export default async function DashboardLayout({
   children,
@@ -43,7 +42,7 @@ export default async function DashboardLayout({
             >
               בקשה חדשה
             </Link>
-            <form action={signOut}>
+            <form action="/api/auth/sign-out" method="POST">
               <button type="submit" className="text-ink-muted hover:text-ink">
                 התנתקות
               </button>

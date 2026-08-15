@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { unstable_rethrow } from "next/navigation";
-import { createPaymentRequest } from "../actions";
+import { useRouter } from "next/navigation";
 import { platformFeeCents, formatCents } from "@/lib/fee";
 
 const REVIEW_WINDOW_OPTIONS = [
@@ -12,26 +11,48 @@ const REVIEW_WINDOW_OPTIONS = [
 ];
 
 export function NewRequestForm() {
+  const router = useRouter();
   const [amount, setAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const amountShekels = Number(amount);
   const hasValidAmount = Number.isFinite(amountShekels) && amountShekels > 0;
   const amountCents = hasValidAmount ? Math.round(amountShekels * 100) : 0;
   const feeCents = hasValidAmount ? platformFeeCents(amountCents) : 0;
 
-  async function action(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError(null);
+    setSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
     try {
-      await createPaymentRequest(formData);
-    } catch (e) {
-      unstable_rethrow(e);
-      setError(e instanceof Error ? e.message : "משהו השתבש.");
+      const res = await fetch("/api/payment-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.get("title"),
+          description: formData.get("description"),
+          amount: formData.get("amount"),
+          review_window_hours: formData.get("review_window_hours"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "משהו השתבש.");
+        setSubmitting(false);
+        return;
+      }
+      router.push(`/dashboard/${data.id}`);
+    } catch {
+      setError("משהו השתבש.");
+      setSubmitting(false);
     }
   }
 
   return (
-    <form action={action} className="mt-8 flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
       <label className="flex flex-col gap-1 text-sm text-ink">
         כותרת
         <input
@@ -94,9 +115,10 @@ export function NewRequestForm() {
 
       <button
         type="submit"
-        className="mt-2 rounded-lg bg-accent px-4 py-2 font-semibold text-white hover:bg-accent-hover"
+        disabled={submitting}
+        className="mt-2 rounded-lg bg-accent px-4 py-2 font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
       >
-        יצירת בקשה
+        {submitting ? "יוצרים…" : "יצירת בקשה"}
       </button>
     </form>
   );

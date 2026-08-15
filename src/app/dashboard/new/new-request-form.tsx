@@ -59,7 +59,7 @@ export function NewRequestForm() {
           name="amount"
           type="number"
           required
-          min="1"
+          min="20"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
@@ -69,7 +69,7 @@ export function NewRequestForm() {
 
       {hasValidAmount && (
         <p className="-mt-2 text-xs text-ink-muted">
-          עמלת פלטפורמה: {formatCents(feeCents)} (1%, מינימום ₪10) — תקבלו{" "}
+          עמלת פלטפורמה: {formatCents(feeCents)} (1%, מינימום משתנה לפי הסכום) — תקבלו{" "}
           {formatCents(amountCents - feeCents)}. הלקוח משלם{" "}
           {formatCents(amountCents)} במלואם.
         </p>

@@ -44,6 +44,9 @@ export async function createPaymentRequest(formData: FormData) {
   if (!Number.isFinite(amountShekels) || amountShekels <= 0) {
     throw new Error("הסכום חייב להיות מספר חיובי.");
   }
+  if (amountShekels < 20) {
+    throw new Error("סכום הבקשה המינימלי הוא ₪20.");
+  }
   if (!REVIEW_WINDOW_HOURS.includes(reviewWindowHours)) {
     throw new Error("תקופת בדיקה לא תקינה.");
   }

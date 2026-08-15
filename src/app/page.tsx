@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function LandingPage() {
   return (
@@ -66,7 +67,8 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line px-6 py-6 text-center text-xs text-ink-faint">
-        Kept · תשלומים מאובטחים על ידי PayPal
+        <SiteFooter />
+        <p className="mt-1">תשלומים מאובטחים על ידי PayPal</p>
       </footer>
     </div>
   );

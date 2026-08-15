@@ -5,6 +5,7 @@ import { ActionButton } from "@/components/action-button";
 import { ApproveWithConsent } from "@/components/approve-with-consent";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { StatusChip } from "@/components/status-chip";
+import { SiteFooter } from "@/components/site-footer";
 import { startCheckout, approveRequest, disputeRequest } from "./actions";
 import type { PaymentRequest } from "@/types/payment-request";
 
@@ -235,6 +236,9 @@ export default async function PublicRequestPage({
           <p className="mt-11 text-center text-xs text-ink-faint">
             תשלומים מאובטחים על ידי PayPal · לא נדרש חשבון
           </p>
+          <div className="mt-3 text-center text-xs text-ink-faint">
+            <SiteFooter />
+          </div>
         </main>
       </div>
     </div>

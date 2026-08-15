@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { SiteFooter } from "@/components/site-footer";
 
 export default async function DashboardLayout({
   children,
@@ -63,6 +64,10 @@ export default async function DashboardLayout({
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
         {children}
       </main>
+
+      <footer className="border-t border-line px-6 py-6 text-center text-xs text-ink-faint">
+        <SiteFooter />
+      </footer>
     </div>
   );
 }

@@ -107,11 +107,11 @@ export default function TermsPage() {
             <p>
               לשאלות בנוגע לתנאים אלו, ניתן לפנות אלינו ב-
               <a
-                href="mailto:keptplatform@gmail.com"
+                href="mailto:support@kept.co.il"
                 dir="ltr"
                 className="text-accent underline decoration-line underline-offset-2 hover:text-accent-hover"
               >
-                keptplatform@gmail.com
+                support@kept.co.il
               </a>
               .
             </p>

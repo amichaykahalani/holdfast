@@ -28,7 +28,7 @@ export default async function DashboardLayout({
             <span className="text-lg font-semibold tracking-tight text-ink">
               Kept
             </span>
-            <span dir="ltr" className="text-xs text-ink-muted">
+            <span dir="ltr" className="text-end text-xs text-ink-muted">
               Your money is{" "}
               <span className="font-semibold text-accent">Kept</span>.
             </span>

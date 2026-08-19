@@ -23,7 +23,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex flex-1 flex-col bg-paper">
       <header className="border-b border-line">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
           <Link href="/dashboard" className="flex flex-col leading-tight">
             <span className="text-lg font-semibold tracking-tight text-ink">
               Kept
@@ -33,8 +33,10 @@ export default async function DashboardLayout({
               <span className="font-semibold text-accent">Kept</span>.
             </span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <span className="text-ink-muted">{user?.email}</span>
+          <nav className="flex items-center justify-between gap-3 text-sm sm:justify-end sm:gap-4">
+            <span className="hidden max-w-[160px] truncate text-ink-muted sm:inline">
+              {user?.email}
+            </span>
             <Link
               href={
                 freelancer?.paypal_email ? "/dashboard/new" : "/settings/payout"
@@ -55,17 +57,17 @@ export default async function DashboardLayout({
       {freelancer && !freelancer.paypal_email && (
         <Link
           href="/settings/payout"
-          className="bg-amber-tint px-6 py-2 text-center text-sm font-medium text-amber hover:opacity-80"
+          className="bg-amber-tint px-4 py-2 text-center text-sm font-medium text-amber hover:opacity-80 sm:px-6"
         >
           יש להוסיף אימייל תשלום ב-PayPal לפני יצירת בקשות ←
         </Link>
       )}
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
         {children}
       </main>
 
-      <footer className="border-t border-line px-6 py-6 text-center text-xs text-ink-faint">
+      <footer className="border-t border-line px-4 py-6 text-center text-xs text-ink-faint sm:px-6">
         <SiteFooter />
       </footer>
     </div>

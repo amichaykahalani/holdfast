@@ -16,9 +16,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const description = "אסקרו לפרילנסרים — קבלו תשלום בלי לרדוף אחרי חשבוניות.";
+
 export const metadata: Metadata = {
-  title: "Kept",
-  description: "אסקרו לפרילנסרים — קבלו תשלום בלי לרדוף אחרי חשבוניות.",
+  metadataBase: new URL("https://www.kept.co.il"),
+  title: "Kept — תשלום בטוח לפרילנסרים",
+  description,
+  openGraph: {
+    title: "Kept — תשלום בטוח לפרילנסרים",
+    description,
+    url: "https://www.kept.co.il",
+    siteName: "Kept",
+    locale: "he_IL",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

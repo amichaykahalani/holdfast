@@ -64,6 +64,58 @@ export default function LandingPage() {
             </dd>
           </div>
         </dl>
+
+        <p className="mt-16 text-sm text-ink-muted">
+          PayPal מטפל בכל תנועת הכסף בפועל. אנחנו לעולם לא נוגעים בכסף
+          בעצמנו ולא שומרים פרטי תשלום.
+        </p>
+
+        <section className="mt-16 border-t border-line pt-12 text-start">
+          <h2 className="text-xl font-bold tracking-tight text-ink">
+            שאלות נפוצות
+          </h2>
+          <div className="mt-6 flex flex-col divide-y divide-line border-y border-line">
+            <details className="py-4">
+              <summary className="cursor-pointer font-medium text-ink">
+                מה קורה אם הלקוח לא מגיב?
+              </summary>
+              <p className="mt-2 text-sm text-ink-muted">
+                אם הלקוח לא מאשר את העבודה תוך תקופת הבדיקה שנקבעה (24
+                שעות, 3 ימים, או 7 ימים), הכסף משוחרר אוטומטית לפרילנסר.
+                אין צורך לרדוף אחרי אישור ידני.
+              </p>
+            </details>
+            <details className="py-4">
+              <summary className="cursor-pointer font-medium text-ink">
+                יש הגבלת סכום לבקשה?
+              </summary>
+              <p className="mt-2 text-sm text-ink-muted">
+                הסכום המינימלי לבקשה הוא ₪20. אין תקרה עליונה — אפשר
+                ליצור בקשות בכל סכום מעל המינימום.
+              </p>
+            </details>
+            <details className="py-4">
+              <summary className="cursor-pointer font-medium text-ink">
+                מה קורה אם יש בעיה בתשלום מול PayPal?
+              </summary>
+              <p className="mt-2 text-sm text-ink-muted">
+                אם התשלום נכשל, אפשר פשוט לנסות שוב — זה קורה מול PayPal
+                ולא דורש התערבות שלנו. אם הבעיה נמשכת, ניתן לפנות אלינו
+                ונבדוק את המקרה לגופו.
+              </p>
+            </details>
+            <details className="py-4">
+              <summary className="cursor-pointer font-medium text-ink">
+                למה לא פשוט לבקש מקדמה?
+              </summary>
+              <p className="mt-2 text-sm text-ink-muted">
+                מקדמה מגנה רק מפני אי-תשלום, לא מפני מחלוקת על איכות
+                העבודה — ברגע שהכסף עבר, אין עליו יותר שליטה. ב-Kept
+                הסכום המלא מוחזק עד לאישור העבודה, כך ששני הצדדים מוגנים.
+              </p>
+            </details>
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-line px-6 py-6 text-center text-xs text-ink-faint">

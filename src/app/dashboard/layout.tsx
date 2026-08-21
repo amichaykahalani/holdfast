@@ -33,10 +33,10 @@ export default async function DashboardLayout({
               <span className="font-semibold text-accent">Kept</span>.
             </span>
           </Link>
-          <nav className="flex items-center justify-between gap-3 text-sm sm:justify-end sm:gap-4">
+          <nav className="flex items-center justify-between gap-3 text-sm sm:min-w-0 sm:flex-1 sm:justify-end sm:gap-4">
             <span
               dir="ltr"
-              className="hidden max-w-[160px] truncate text-ink-muted sm:inline"
+              className="hidden truncate text-ink-muted sm:inline sm:min-w-0 sm:flex-1"
             >
               {user?.email}
             </span>
@@ -44,11 +44,11 @@ export default async function DashboardLayout({
               href={
                 freelancer?.paypal_email ? "/dashboard/new" : "/settings/payout"
               }
-              className="rounded-lg bg-accent px-4 py-2 font-semibold text-white hover:bg-accent-hover"
+              className="shrink-0 rounded-lg bg-accent px-4 py-2 font-semibold text-white hover:bg-accent-hover"
             >
               בקשה חדשה
             </Link>
-            <form action="/api/auth/sign-out" method="POST">
+            <form action="/api/auth/sign-out" method="POST" className="shrink-0">
               <button type="submit" className="text-ink-muted hover:text-ink">
                 התנתקות
               </button>

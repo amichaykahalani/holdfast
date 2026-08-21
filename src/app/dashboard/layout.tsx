@@ -34,7 +34,10 @@ export default async function DashboardLayout({
             </span>
           </Link>
           <nav className="flex items-center justify-between gap-3 text-sm sm:justify-end sm:gap-4">
-            <span className="hidden max-w-[160px] truncate text-ink-muted sm:inline">
+            <span
+              dir="ltr"
+              className="hidden max-w-[160px] truncate text-ink-muted sm:inline"
+            >
               {user?.email}
             </span>
             <Link

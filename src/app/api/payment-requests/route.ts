@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSameOrigin, noStore } from "@/lib/api-route-guard";
@@ -88,10 +88,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, noStore({ status: 500 }));
   }
 
-  const admin = createAdminClient();
-  await admin.from("escrow_events").insert({
-    payment_request_id: created.id,
-    event_type: "created",
+  // Audit log write — doesn't affect the response, so it shouldn't hold up
+  // the request. `after()` keeps the function alive (via Vercel's
+  // waitUntil) until this finishes, without the client waiting on it.
+  after(async () => {
+    const admin = createAdminClient();
+    await admin.from("escrow_events").insert({
+      payment_request_id: created.id,
+      event_type: "created",
+    });
   });
 
   return NextResponse.json({ id: created.id }, noStore());

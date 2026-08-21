@@ -2,6 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  if (pathname === "/") {
+    const code = searchParams.get("code");
+    if (code) {
+      // Confirmation emails sent while Supabase's Site URL pointed at this
+      // domain's root (instead of /auth/callback) land the PKCE code here.
+      // Forward it so the session exchange still completes for anyone who
+      // already has one of those emails sitting in their inbox — without
+      // this, the code is silently dropped and the account never confirms.
+      const callbackUrl = new URL("/auth/callback", request.url);
+      callbackUrl.searchParams.set("code", code);
+      return NextResponse.redirect(callbackUrl);
+    }
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -42,5 +59,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/settings/:path*"],
+  matcher: ["/", "/dashboard/:path*", "/settings/:path*"],
 };

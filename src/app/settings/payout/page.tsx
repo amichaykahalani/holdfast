@@ -18,7 +18,7 @@ export default async function PayoutSettingsPage({
     .single();
 
   return (
-    <div className="mx-auto max-w-md py-16">
+    <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <h1 className="text-xl font-semibold text-ink">אימייל תשלום</h1>
       <p className="mt-2 text-sm text-ink-muted">
         כספים ששוחררו יישלחו לאימייל הזה דרך PayPal Payouts. הוא לא חייב

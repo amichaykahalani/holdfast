@@ -93,18 +93,14 @@ export default async function PublicRequestPage({
           )}
 
           <div className="mt-7 rounded-[10px] border border-line bg-white p-7">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="mb-2 text-[11px] font-semibold tracking-wider text-ink-faint">
-                  סכום לתשלום
-                </p>
-                <div className="font-mono text-[2.5rem] font-medium leading-none tracking-tight tabular-nums text-ink">
-                  {formatCents(request.amount_cents, request.currency)}
-                </div>
-              </div>
-              <div className="pt-0.5">
-                <StatusChip status={request.status} />
-              </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-[11px] font-semibold tracking-wider text-ink-faint">
+                סכום לתשלום
+              </p>
+              <StatusChip status={request.status} />
+            </div>
+            <div className="mt-2 font-mono text-[2.5rem] font-medium leading-none tracking-tight tabular-nums text-ink">
+              {formatCents(request.amount_cents, request.currency)}
             </div>
 
             <p className="mt-5 border-t border-line pt-[1.1rem] text-[0.8125rem] text-ink-muted">

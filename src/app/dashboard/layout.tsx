@@ -24,7 +24,10 @@ export default async function DashboardLayout({
     <div className="flex flex-1 flex-col bg-paper">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
-          <Link href="/dashboard" className="flex flex-col leading-tight">
+          <Link
+            href="/dashboard"
+            className="flex items-baseline justify-between gap-2 leading-tight sm:flex-col sm:items-stretch sm:justify-start sm:gap-0"
+          >
             <span className="text-lg font-semibold tracking-tight text-ink">
               Kept
             </span>

@@ -75,7 +75,7 @@ export function CountdownTimer({
           <span className="text-[11px] font-semibold tracking-wider text-ink-faint">
             זמן שנותר
           </span>
-          <span className="font-mono text-sm font-medium tabular-nums text-ink">
+          <span className="font-sans text-sm font-medium tabular-nums text-ink">
             {figure}
           </span>
         </div>

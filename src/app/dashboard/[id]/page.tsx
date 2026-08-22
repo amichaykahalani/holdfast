@@ -38,19 +38,23 @@ export default async function RequestDetailPage({
         <p className="mt-3 text-sm text-ink-muted">{request.description}</p>
       )}
 
-      <dl className="mt-6 grid grid-cols-2 gap-y-2 text-sm font-mono tabular-nums">
+      <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm font-mono tabular-nums">
         <dt className="font-sans text-ink-muted">סכום</dt>
-        <dd className="text-ink">
+        <dd className="font-medium text-ink">
           {formatCents(request.amount_cents, request.currency)}
         </dd>
         <dt className="font-sans text-ink-muted">עמלת פלטפורמה</dt>
-        <dd className="text-ink">{formatCents(feeCents, request.currency)}</dd>
+        <dd className="font-medium text-ink">
+          {formatCents(feeCents, request.currency)}
+        </dd>
         <dt className="font-sans text-ink-muted">תקבלו</dt>
-        <dd className="text-ink">
+        <dd className="font-medium text-ink">
           {formatCents(request.amount_cents - feeCents, request.currency)}
         </dd>
         <dt className="font-sans text-ink-muted">תקופת בדיקה</dt>
-        <dd className="text-ink">{request.review_window_hours} שעות</dd>
+        <dd className="font-sans font-medium text-ink">
+          {request.review_window_hours} שעות
+        </dd>
       </dl>
 
       <div className="mt-8">
